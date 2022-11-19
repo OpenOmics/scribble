@@ -1,13 +1,13 @@
 <div align="center">
    
-  <h1>scrippets <sup>< / ></sup></h1>
+  <h1>scrippple <sup>< / ></sup></h1>
   
-  *Guides, **scrip**ts, and code sni**ppets***
+  _**Scrip**ts, code sni**pp**ets, and one**l**in**e**rs_
  
 </div>
 
 ## Overview
-Welcome to scrippets! Scrippets is a collection of miscellaneous guides, ***scri***pts, code sni***ppets*** and oneliners. 
+Welcome to scrippple! Scrippple is a collection of miscellaneous guides, **scrip**ts, code sni**pp**ets and one**l**in**e**rs. At the end of the day, we code to decipher the code of life. Did you write an awesome oneliner to that became sentient? Scrippple it down before its lost forever!
 
 To contribute to scrippets, please create a new directory:
   

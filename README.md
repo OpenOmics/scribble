@@ -1,8 +1,8 @@
 <div align="center">
    
-  <h1>scrippets 📜</h1>
+  <h1>scrippets <sup>< / ></sup></h1>
   
-  **Guides, scripts, and code snippets**
+  *Guides, **scrip**ts, and code sni**ppets***
  
 </div>
 

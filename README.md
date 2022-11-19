@@ -1,15 +1,15 @@
 <div align="center">
    
-  <h1>scrippple <sup>< / ></sup></h1>
+  <h1>scribble <sup>< / ></sup></h1>
   
-  _**Scrip**ts, code sni**pp**ets, and one**l**in**e**rs_
+  _**Scr**ipts, code sn**i**ppets in-**b**etween **b**ioinformatics and data science, and one**l**in**e**rs_
  
 </div>
 
 ## Overview
-Welcome to scrippple! Scrippple is a collection of miscellaneous guides, **scrip**ts, code sni**pp**ets and one**l**in**e**rs. At the end of the day, we code to decipher the code of life. Did you write an awesome oneliner to that became sentient? Scrippple it down before its lost forever!
+Welcome to scribble! Scribble is a collection of miscellaneous guides, scripts, code snippets, oneliners. It contains everything in-between the integration of bioinformatics and data science. At the end of the day, we code to decipher the code of life. Did you write an awesome oneliner to that became sentient? Scribble it down before its lost forever!
 
-To contribute to scrippets, please create a new directory:
+To contribute to scribble, please create a new directory:
   
 1. Add a README.md containing basic information about the script or code snippet
     - If your code replies on any third party software or packages, please add a list of the required dependencies.  

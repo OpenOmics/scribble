@@ -7,7 +7,7 @@
 </div>
 
 ## Overview
-Welcome to scribble! Scribble is a collection of miscellaneous guides, scripts, code snippets, oneliners. It contains everything in-between the integration of bioinformatics and data science. At the end of the day, we code to decipher the code of life. Did you write an awesome oneliner to that became sentient? Scribble it down before its lost forever!
+Welcome to scribble! Scribble is a collection of bioinformatics and data science guides, scripts, code snippets, and oneliners. At the end of the day, we code to decipher the code of life. Did you write an awesome oneliner to that became sentient? Scribble it down before its lost forever!
 
 To contribute to scribble, please create a new directory:
   

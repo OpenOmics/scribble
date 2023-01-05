@@ -1,7 +1,17 @@
-# Code-snippets
+# Snippets
 
 
-Remove a files contents while keeping it's modification time:
+The snippets directory contains [code-snippets](https://en.wikipedia.org/wiki/Snippet_(programming)). These are usually small stand-alone pieces of re-usable code. Snippets can act like templates for repeating certain acts/patterns/tasks. Did you figure out how to do something really cool in R or python that you want to share? Scribble it down here!
+
+### Remove a files contents while keeping it's modification time:
+
+*What?* This bash function is useful for deleting the contents of large files associated with a Snakemake pipeline while keeping the original modification times. This will prevent any DAG related errors when running or dry-running the pipeline again. It will also prevent certain rules from running. Snakemake looks at mtime to see if an input to a rule as been updated. 
+
+*Why?* This command can be used to reduce the storage footprint of a pipeline's working directory while preserving current dry-run functionality. 
+
+**Please keep in mind:** this bash function will delete any files that are provided as input. And as so, please take steps to ensure that any files that are provided to this function are already archived (if they are important) prior to running this command.
+
+#### **Usage**: `erase /path/to/files/*.txt`
 
 ```bash
 function erase(){
@@ -48,7 +58,5 @@ function erase(){
 
 }
 
-export erase
+export -f erase
 ```
-
-**Usage**: `erase /path/to/files/*.txt`

@@ -1,0 +1,3 @@
+# Scripts
+
+The scripts directory contains generalized scripts that accomplish a task, analysis, or objective. Did you write an awesome script that automates something cool? Did you create a script that produces a beautiful figure? Scribble it down here! If your script contains a few small input files (<500KB), please feel free to include them here as well. Scripts don't have to written in python and R to be useful. Rmarkdown, quarto, jupyter notebooks, and even simple bash/sh scripts are all welcome! Please take some steps to ensure your scripts do not contain any hard-coded paths to files or resources. If you script has software requirements, please list them in the README accompanying your script.

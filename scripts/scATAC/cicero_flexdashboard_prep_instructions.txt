@@ -1,0 +1,69 @@
+Created by: Tovah Markowitz
+
+To be used with convert_conns_into_cleaned-bedpe.R and cicero_filtering_shiny.Rmd.
+
+Please note that the flex dashboard can be adapted to work with other bedpe data without too much difficulty.
+
+These notes assume you are using the most up to date versions of the packages available
+as of January 2023.
+
+The example uses code specific to hg38, but can be adapted to any standard reference.
+
+Step1: Run cicero on your signac object data
+
+  Note: The default cicero conditions are ideal for human samples and should not be
+  changed. All other species will require tweaking, see cicero documentation.
+
+ if (!requireNamespace("remotes", quietly = TRUE))
+    install.packages("remotes")
+  remotes::install_github('satijalab/seurat-wrappers')
+  remotes::install_github("cole-trapnell-lab/cicero-release", ref = "monocle3")
+
+  library(Signac)
+  library(Seurat)
+  library(SeuratWrappers)
+  library(cicero)
+  library(GenomeInfoDb)
+  library(EnsDb.Hsapiens.v86)
+  library(GenomicRanges)
+
+  annotations <- GetGRangesFromEnsDb(EnsDb.Hsapiens.v86)
+  seqlevelsStyle(annotations) <- 'UCSC'
+  genome(annotations) <- "hg38"
+  genome.df <- data.frame(chr=names(seqlengths(annotations)),length=seqlengths(annotations))
+
+  data.cds <- as.cell_data_set(x = data)
+  data.cicero <- make_cicero_cds(data.cds, reduced_coordinates = reducedDims(data.cds)$UMAP)
+  data.conns <- run_cicero(data.cicero, genomic_coords = genome.df, sample_num = 100)
+
+
+Step2: Run convert_conns_into_cleaned-bedpe.R
+
+  source("convert_conns_into_cleaned-bedpe.R")
+  conns2Bedpe(conns= data.conns, RDSfile="data.RDS") 
+
+
+Step 3: Adapt Rmd for your project
+  Note: You will need one Rmd for each cicero analysis/RDS file.
+
+  For all steps listed, line numbers will be those in the original file cicero_filtering_shiny.Rmd.
+    1. Update the title and introductory summary for your project.
+    2. Change line 158 to that of the RDS to be analyzed with this flexdashboard.
+    3. Update species/reference genome specific features:
+        a. Update package lists in lines 33-37.
+        b. Update information in lines 41-43 to be consistent.
+        c. If gene symbols are not all caps for your species, change gene2GRanges
+           (lines 61-66) to handle the difference.
+
+Step 4: Test Rmd
+
+  Here are the basic steps:
+    1. Make sure that the RDS and Rmd are in the same folder.
+    2. Open the Rmd with RStudio
+    3. Make sure the working directory is the location where the files are located
+    4. Scroll through the file to line 23.
+    5. Click the green arrow there to make sure the necessary packages are installed 
+       (only need to do this once)
+    6. Click the “Run Document” button at the top of the file’s window to have the 
+       dashboard start running.
+    7. Explore the data.

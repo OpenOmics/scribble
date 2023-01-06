@@ -1,0 +1,241 @@
+---
+title: 'Link/Bedpe Filtering'
+output:
+  flexdashboard::flex_dashboard:
+    storyboard: yes
+    orientation: rows
+    social: menu
+    source_code: embed
+runtime: shiny
+---
+
+This dashboard is designed to allow filtering of ...
+Links can be filtered based upon genomic location or distance to a given
+gene. Since this tool is filtering based upon the locations of the link ends,
+it is set up to handle multiple search criteria.  
+**Genomic location:**
+1) must start with "chr"
+2) no commas or spaces
+3) can be a single base or a range  
+**Gene name requirements:** looking for a gene symbol in the UCSC database  
+**Max distance:** the maximum distance between the lookup region and the link end
+
+```{r setup, include = F}
+if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+
+if(!require(flexdashboard)) { install.packages('flex.dashboard'); library(flexdashboard) }
+if(!require(DT)) { install.packages('DT'); library(DT) }
+if(!require(shiny)) { install.packages('shiny'); library(shiny) }
+if(!require(InteractionSet)) { BiocManager::install('InteractionSet');
+  library(InteractionSet) }
+if(!require(karyoploteR)) { BiocManager::install('karyoploteR');
+  library(karyoploteR) }
+if(!require(TxDb.Hsapiens.UCSC.hg38.knownGene)) { 
+  BiocManager::install('TxDb.Hsapiens.UCSC.hg38.knownGene');
+  library(TxDb.Hsapiens.UCSC.hg38.knownGene) }
+if(!require(org.Hs.eg.db)) {
+  BiocManager::install('org.Hs.eg.db'); library(org.Hs.eg.db) }
+```
+
+```{r}
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+#orgdb <- org.Hs.eg.db
+entrez2Symbol <- toTable(org.Hs.egSYMBOL)
+
+DT.option = list( pageLength=15 )
+
+string2GRanges <- function(inString) {
+  cleanedString <- unlist(strsplit(gsub("[^[:alnum:]]", " ", inString), " "))
+  if (length(cleanedString == 2)) {
+        outGR <- GRanges(cleanedString[1],
+                      ranges=IRanges(as.numeric(cleanedString[2]),
+                                    as.numeric(cleanedString[2])))
+  } else {
+    outGR <- GRanges(cleanedString[1],
+                      ranges=IRanges(as.numeric(cleanedString[2]),
+                                    as.numeric(cleanedString[3])))
+  }
+  return(outGR)
+} 
+
+gene2GRanges <- function(inGene) {
+  # currently set up for human gene names, ie all caps
+  inGene <- toupper(inGene)
+  entrezID <- entrez2Symbol$gene_id[which(entrez2Symbol$symbol == inGene)]
+  suppressMessages(geneGR <- subset(genes(txdb),gene_id==entrezID))
+}
+
+filterFunction <- function(conns, inString1, inString2, inGene1, inGene2,
+                           maxGap, scoreCutoff) {
+  if (inString1 != "") {
+        inGR1 <- string2GRanges(inString1)
+        conns3 <- subsetByOverlaps(conns, inGR1, maxgap=maxGap)
+  } else {
+        conns3 <- conns
+  }
+  if (inString2 != "") {
+        inGR2 <- string2GRanges(inString2)
+        conns3 <- subsetByOverlaps(conns3, inGR2, maxgap=maxGap)
+  }
+  if (inGene1 != "") {
+    geneGR1 <- gene2GRanges(inGene1)
+    conns3 <- subsetByOverlaps(conns3, geneGR1, maxgap=maxGap)
+  }
+  if (inGene2 != "") {
+    geneGR2 <- gene2GRanges(inGene2)
+    conns3 <- subsetByOverlaps(conns3, geneGR2, maxgap=maxGap)
+  }
+  conns3 <- conns3[which(conns3$score > scoreCutoff)]
+}
+
+karyoplot <- function(conns3, coords, txdb, entrez2Symbol) {
+  conns4 <- conns3
+  midpoint <- floor(width(regions(conns4)) / 2)
+  start(regions(conns4)) <- start(regions(conns4)) + midpoint
+  end(regions(conns4)) <- start(regions(conns4))
+    
+  pp <- getDefaultPlotParams(plot.type=1)
+  pp$leftmargin <- 0.15
+  pp$topmargin <- 15
+  pp$bottommargin <- 15
+  pp$ideogramheight <- 5
+  pp$data1inmargin <- 10
+  
+  kp <- plotKaryotype(zoom = coords, cex=1, plot.params = pp)
+  if (width(coords) > 200000) {
+    kpAddBaseNumbers(kp, tick.dist = 100000, minor.tick.dist = 10000,
+                   add.units = TRUE, cex=0.6, digits = 4)
+  } else {
+    kpAddBaseNumbers(kp, tick.dist = 10000, minor.tick.dist = 1000,
+                   add.units = TRUE, cex=0.6, digits = 3)
+  }
+  suppressMessages(genes.data <- makeGenesDataFromTxDb(txdb,
+               karyoplot=kp, plot.transcripts = TRUE, 
+               plot.transcripts.structure = TRUE))
+  if (packageVersion("karyoploteR") < '1.22.0') {
+    genes.data <- addGeneNames(genes.data)
+  } else {
+    tmp <- sapply(genes.data$genes$gene_id, function(x) { 
+       entrez2Symbol$symbol[which(entrez2Symbol$gene_id == x)] }, simplify=F)
+    genes.data$genes$name <- sapply(tmp, function(x) { x[1] } )
+  }
+  genes.data <- mergeTranscripts(genes.data)
+  kpPlotGenes(kp, data=genes.data, r0=0, r1=0.2, gene.name.cex = 0.6,
+              gene.name.col="black", col="gray60")
+  kpPlotRegions(kp, unique(anchors(conns3)$first), r0=0.22, r1=0.25)
+  kpPlotRegions(kp, unique(anchors(conns3)$second), r0=0.22, r1=0.25)
+  kpPlotLinks(kp, data=anchors(conns4)$first, data2=anchors(conns4)$second,
+                  arch.height=conns4$score, r0=0.25, r1=1)
+  kpAxis(kp, ymin=kp$latest.plot$computed.values$ymin, 
+         ymax=kp$latest.plot$computed.values$ymax, numticks=5,r0=0.25, r1=1)
+}
+```
+
+
+Select Controls {.sidebar}
+===========================================================
+
+
+### Filters
+
+```{r}
+
+#inString1 <- "chr3:46353864-46360940" # CCR2
+#inString2 <- "chr3:46370946-46376206" # CCR5
+
+# chr@:##-##
+
+textInput('inString1', h4('Genomic Region 1'), value = "")
+textInput('inString2', h4('Genomic Region 2'), value = "")
+textInput('inGene1', h4('Gene Symbol 1'), value = "")
+textInput('inGene2', h4('Gene Symbol 2'), value = "")
+numericInput('maxGap',h4('Maximum Gap'), value = 5000)
+sliderInput('scoreCutoff', h4('Score Cutoff'), min = 0, max = 1, value = 0.5,step=0.05)
+```
+
+
+```{r download_bedpe}
+conns <- readRDS('./cicero_conns.rds')
+
+downloadHandler(filename = 'output.bedpe',
+     outputArgs=list(label="Download Bedpe"),
+     content = function(file) {
+
+       conns3 <- filterFunction(conns, input$inString1, input$inString2,
+                                input$inGene1, input$inGene2, 
+                                input$maxGap, input$scoreCutoff)
+       rtracklayer::export(conns3,file)
+   }
+)
+
+```
+
+<br>
+
+```{r download_figure}
+
+downloadHandler(filename = 'output.pdf',
+     contentType ="image/png",
+     outputArgs=list(label="Download PDF Figure"),
+     content = function(file) {
+       
+  conns3 <- filterFunction(conns, input$inString1, input$inString2,
+                           input$inGene1, input$inGene2, 
+                           input$maxGap, input$scoreCutoff)
+
+  coords <- range(c(anchors(conns3)$first, anchors(conns3)$second))
+ 
+  pdf(file)
+  karyoplot(conns3, coords, txdb, entrez2Symbol)
+  dev.off()   
+   }
+)
+
+```
+
+
+
+Results
+==========================================================
+
+Row
+---------------------------------------------------------
+### Table
+
+```{r}
+DTOutput("table")
+
+output$table = DT::renderDataTable({
+
+    conns3 <- filterFunction(conns, input$inString1, input$inString2,
+                             input$inGene1, input$inGene2, 
+                             input$maxGap, input$scoreCutoff)  
+    table = as.data.frame(conns3)
+  
+  DT::datatable(table, selection = 'single', filter = 'none', 
+                options = list(pageLength = 500, autowidth = T, 
+                               scrollY = 750, scrollX = T, scroller = T))
+})
+```
+
+
+Row
+---------------------------------------------------------
+### Figure
+
+```{r}
+renderPlot({
+  
+  conns3 <- filterFunction(conns, input$inString1, input$inString2,
+                           input$inGene1, input$inGene2, 
+                           input$maxGap, input$scoreCutoff)
+
+  coords <- range(c(anchors(conns3)$first, anchors(conns3)$second))
+  validate(need(length(unique(seqnames(coords))) == 1, 
+                "Plot only created when all links are on one chromosome."))
+  
+  karyoplot(conns3, coords, txdb, entrez2Symbol)
+})
+
+```
+

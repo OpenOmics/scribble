@@ -45,7 +45,7 @@ if (!requireNamespace("regioneR", quietly = TRUE)) {
 ####################
 # Functions for prepping files for bootstrapping
 
-extendRegions <- function(grObject, finalSize) {
+expandRegions <- function(grObject, finalSize) {
   # This function will resize all rows in a GenomicRanges object around their
   # midpoints to reach a desired final size.
   library(GenomicRanges)
@@ -63,11 +63,10 @@ prepFile <- function(inFile, addFlanks=0) {
   # sorting it, extending the regions as requested, and collapsing overlapping
   # rows.
   library(GenomicRanges)
-  library(regioneR)
   fileData <- rtracklayer::import(inFile)
   fileData <- sort(fileData)
   if (addFlanks != 0) {
-    fileData <- extendRegions(fileData, extend.start=addFlanks, extend.end=addFlanks)
+    fileData <- regioneR::extendRegions(fileData, extend.start=addFlanks, extend.end=addFlanks)
   }
   return(fileData)
 }
@@ -83,7 +82,7 @@ overlapAmt <- function(A,B,...) {
 # Example usage
 
 data1 <- prepFile("file1.bed", addFlanks=(1e5/2))
-data2 <- extendRegions(prepFile("file2.bed"), finalSize=1000)
+data2 <- expandRegions(prepFile("file2.bed"), finalSize=1000)
 blacklist <- prepFile("hg19.blacklist.bed")
 chrs <- read.table("hg19.len", header=FALSE)
 # chrs should be a two column file of chromosome name and chromosome length

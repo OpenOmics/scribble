@@ -11,3 +11,7 @@ a few other common comparisons that can be used instead.
 > To create an IGV batch script from a bed file or bed-like file that will allow an semi-automated creation of snapshots across a genome. Just run
 this script, open IGV, load the proper tracks and format them as you chose and then run the batch script to get a folder of pngs named by snapshop region.
 
+#### overlapDifferenceStat.R
+> Have two peak files and want to see if one of them overlaps a feature type of interest (like promoters) more often than the other? 
+And determine if the difference is significant? That's what this script is for. You can also add flanks to the features of interest
+to see if one of the files is more likely to be within a certain distance of the features of interest.

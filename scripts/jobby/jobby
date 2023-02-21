@@ -55,7 +55,7 @@ __authors__ = 'Skyler Kuhn'
 __email__ = 'skyler.kuhn@nih.gov'
 __home__  =  os.path.dirname(os.path.abspath(__file__))
 _name = os.path.basename(sys.argv[0])
-_description = 'Will take your job(s)... and display information about it!'
+_description = 'Will take your job(s)... and display their information!'
 
 
 # Classes

@@ -1,0 +1,7 @@
+# To trim PE reads to the same shorter length, no adapter trimming
+
+IN1=${ROOT}_R1_001.fastq.gz
+IN2=${ROOT}_R2_001.fastq.gz
+OUT1=${ROOT}_R1_001.clip.fastq.gz
+OUT2=${ROOT}_R2_001.clip.fastq.gz
+fastp --disable_trim_poly_g --disable_adapter_trimming --disable_length_filtering --disable_quality_filtering --in1 $IN1 --in2 $IN2 --out1 $OUT1 --out2 $OUT2 --max_len1 100

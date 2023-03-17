@@ -1,3 +1,6 @@
+###This line is used to filter out cells with outlier features (nCount_RNA, nFeature_RNA and percent mitochondria) in a list of seurat objects using
+median absolute deviation (MAD).
+
 for (i in 1:length(sgcList)) { ##sgcList is a list of multiple seurat object SC data
   print(paste0("Sample ",i))
   sgc.sample <- sgcList[[i]]

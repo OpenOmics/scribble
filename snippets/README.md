@@ -60,3 +60,41 @@ function erase(){
 
 export -f erase
 ```
+
+### Create a HPC datashare link
+
+*What?* This bash function will create a shareable HPC datashare link. The datashare directory is a special directory which are readable via the web, but are not browseable. Here is more information from [HPC staff](https://hpc.nih.gov/nih/datashare.html). The datashare directory is not a graveyard, so please clean up after yourself if the data does not need to be shared. If you are moving files into the datashare directory, please DO NOT create duplicates of any data. Create hard links with the `ln` command to the original data. 
+
+*Why?* This is useful for temporarily sharing data with collaborators or for creating shareable IGV sessions with other people.
+
+**Please keep in mind:** The datashare directory is not a permanent archival location. Please take steps to delete any data in this directory after you are done. The great thing about creating a link, is that now the data is downloadable with `wget` or `cURL`. If you are sharing BAM files, please make should their BAI files are in the same directory.
+
+#### **Usage**: `hpclink /data/NCBR/datashare/files/*.fastq.gz`
+
+```bash
+function hpclink () {
+    # Creates a HPC datashare link,
+    # given a path to a file in the 
+    # datashare directory, by default,
+    # it is setup to create URLs pointing
+    # /data/NCBR/datashare; however, this
+    # can be edited to point to other 
+    # datashare locations on Biowulf.
+    # $@ = Data to share 
+    # @RETURNS = Helix datashare links  
+    local prefix="/gpfs/gsfs11/users/NCBR/datashare/"; 
+    for f in "$@"; do 
+        abspath="$(readlink -e "$f")"; 
+        if [[ "$abspath" =~ ^"$prefix" ]]; then 
+            link=$(
+                echo "$abspath" \
+                | sed "s@^$prefix@https:\/\/hpc.nih.gov/\~NCBR/@g"
+            ); 
+            echo "$link"; 
+        fi; 
+    done
+}
+
+# Export function 
+export -f hpclink
+```

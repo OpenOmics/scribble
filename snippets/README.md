@@ -171,6 +171,8 @@ export -f extract
 # such as nCount_RNA, nFeature_RNA and % 
 # mitochondria in a list of seurat objects 
 # using median absolute deviations (MAD).
+library("scuttle")  # install with: BiocManager::install("scuttle")
+library("dplyr")    # install with: install.packages("dplyr")
 
 # Variable `sgcList` is a list of multiple
 # seurat object SC data

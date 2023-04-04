@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 """
-ABOUT: This is the main entry for the pipeline.
+ABOUT: Annotate FLAIR's results with gene/transcript information.
 REQUIRES:
   - python>=3
 DISCLAIMER:

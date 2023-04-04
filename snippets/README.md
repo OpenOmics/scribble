@@ -203,3 +203,20 @@ for (i in 1:length(sgcList)) {
     sgcList[[i]] <- sgc.sample
 }
 ```
+
+
+### AWK get unique values while preserving order
+
+*What?* This snippet of AWK code will print all uniq values in a column of data while preserving the order it was encountered.
+
+*Why?* This is a handy alternative to `sort | uniq` as the order of the unique values will be preserved. You can add this snippet to your `~/.bashrc` or `~/.bash_profile` for later use.
+
+#### **Usage**: 
+ - `cut -f1 genome.gtf | orderuniq`
+ - `grep '^>' genome.fa | orderuniq`
+
+```awk
+alias orderuniq='awk '\''!x[$1]++'\'''
+```
+
+

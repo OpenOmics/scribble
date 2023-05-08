@@ -337,6 +337,29 @@ def dashboard_cli(jobs, threads=1, tmp_dir=None):
     print(cmd.stdout.rstrip('\n'))
 
 
+def get_slurm_version():
+    """Gets the version of SLURM in the user's $PATH.
+    Runs `sacct -V` to get version information, and 
+    returns a list containing ['Major','Minor','Patch']
+    information.
+    @return sematic_version list[<int>]
+        List containing Major, Minor, and Patch version.
+    """
+    # Get SLURM's sematic version
+    cmd = subprocess.run(
+        'sacct -V', 
+        stdout=PIPE, 
+        stderr=PIPE, 
+        universal_newlines=True,
+        shell=True
+    ) # slurm 21.08.8-2
+    sematic_version = cmd.stdout.rstrip('\n').split(' ')[-1]   # 21.08.8-2
+    sematic_version = sematic_version.split('-')[0].split('.') # ['21', '08', '8']
+    sematic_version = [int(v) for v in sematic_version]        # [21, 8, 8]
+    
+    return sematic_version
+
+
 def sacct(jobs, threads=1, tmp_dir=None):
     """Generic tool to get SLURM job information.
     `sacct` should be available on all SLURM clusters.
@@ -375,6 +398,22 @@ def sacct(jobs, threads=1, tmp_dir=None):
         "user", "workdir"
     ]
 
+    # Get sematic version of SLURM
+    major, minor, patch = get_slurm_version()
+    if major >= 23:
+        # Output field changed in 23.X,
+        # "Reserved" changed to "Planned"
+        fields = [
+            "jobid", "jobname",
+            "state", "partition",
+            "reqtres", "alloccpus",
+            "reqmem", "maxrss",
+            "timelimit", "planned",
+            "start", "end",
+            "elapsed", "nodelist",
+            "user", "workdir"
+        ]
+
     # Missing std_out and std_err
     missing_fields = {15:['-','-']}
     # Display header information,
@@ -394,7 +433,7 @@ def sacct(jobs, threads=1, tmp_dir=None):
     # Check for failure
     # of the last command
     if cmd.returncode != 0:
-        err("\nError: Failed to get job information with 'dashboard_cli'!")
+        err("\nError: Failed to get job information with 'sacct'!")
         err('Please see error message below:')
         fatal('  └── ', cmd.stderr)
     

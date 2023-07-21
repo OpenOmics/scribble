@@ -18,6 +18,7 @@ Step1: Run cicero on your signac object data
     install.packages("remotes")
   remotes::install_github('satijalab/seurat-wrappers')
   remotes::install_github("cole-trapnell-lab/cicero-release", ref = "monocle3")
+  devtools::install_github('cole-trapnell-lab/monocle3')
 
   library(Signac)
   library(Seurat)

@@ -1,0 +1,84 @@
+---
+title: "RNASeq Heatmap"
+output: html_document
+date: "2023-09-07"
+author: "Asya Khleborodova"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(ggplot2)
+#RNAseq counts matrix
+counts <- read.csv(file="mock_gene_counts.csv", header=T)
+# genes of interest labeled with immune cell group 
+genes <- read.csv(file="mock_gene_list.csv", header=T)
+#subsets counts matrix for genes in mock_gene_list.csv
+counts.main.df <- counts[which(counts$Symbol %in% genes$gene),]
+
+#removes gene name column "Symbol"
+counts.main <- counts.main.df[,-c(1)]
+#converts of samples and their count values to matrix
+counts.main <- as.matrix(counts.main)
+head(counts.main.df,3)
+head(genes,3)
+```
+
+
+```{r}
+#scales counts matrix by row (gene)
+counts.main.scaled <-t(apply(counts.main, 1, scale))
+# reassigns column names, which were lost in previous step 
+colnames(counts.main.scaled)<-colnames(counts.main.df[,-c(1)])
+#converts matrix to dataframe
+counts.main.scaled=as.data.frame(counts.main.scaled)
+#adds gene symbol column to dataframe
+counts.main.scaled$gene=counts.main.df$Symbol
+# adds label column (bio-function group per gene: three in this case)
+df=merge(counts.main.scaled, genes, by.x="gene", by.y="gene",all.x=T)
+#orders rows by label value, or sorts same labels together
+df1=df[order(df$label),]
+#creates `label` vector for use in Heatmap function
+label=df1$label
+# removes character columns `gene` and `label`,
+# converts to matrix for use in Heatmap function
+mat=as.matrix(df1[,-c(1,14)])
+# assigns genes as rownames
+rownames(mat)<-df1$gene
+```
+
+```{r}
+suppressMessages(library(ComplexHeatmap))
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(circlize))
+```
+
+```{r}
+print(head(as.data.frame(mat),3))
+```
+
+
+```{r}
+
+split = label
+head(split)
+h1 <- Heatmap(mat, cluster_rows = F, 
+            column_labels = colnames(mat), 
+            name="Z-score",
+            cluster_columns = T, 
+            row_names_rot = 45, 
+            column_names_rot = 45,
+            column_names_gp = gpar(fontsize = 8),
+            row_names_gp = gpar(fontsize = 5),
+            row_split = split,
+            row_names_side="left",
+            row_title=NULL)
+col_letters = c("Fat and muscle Treg cells" = "pink", "Helper T cell polarization" = "purple", "Treg cell effector" = "blue")
+h2 = Heatmap(label, name = "groups", col = col_letters, width = unit(1, "cm"))
+h=h1+h2
+print(h)
+```
+

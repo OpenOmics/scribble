@@ -219,3 +219,8 @@ test.sh
 test_*/
 tmp*/
 **/tmp*/
+
+# HTML files, usually rendered Rmarkdown reports
+# Temp files
+*.html
+**/*.html

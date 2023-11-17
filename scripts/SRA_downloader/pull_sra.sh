@@ -9,5 +9,5 @@ chmod +x download_from_sra.sh
 
 # Submit the SRA fastq download
 # script as a job to cluster
-swarm --gres=lscratch:500 -b 25 -g 8 -t 32 download_from_sra.sh
+swarm --gres=lscratch:500 -b 25 -g 8 -t 16 download_from_sra.sh
 echo "Swarm submitted"

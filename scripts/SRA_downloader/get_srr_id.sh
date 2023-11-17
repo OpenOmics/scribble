@@ -38,6 +38,7 @@ module purge
 module load sratoolkit
 echo "--- downloading $SRR_ID ---"
 
+mkdir -p $data_dir/md5s
 cd $lscratch
 retry prefetch $SRR_ID
 vdb-validate $SRR_ID >> $data_dir/md5s/${SRR_ID}.validate

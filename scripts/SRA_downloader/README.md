@@ -47,4 +47,5 @@ This script is for swarm/sbatch file creation for download and collection of lar
 
 # Integrity validation
 
-`vdb-validate` output is collected and catalogued to ensure integrity of reads downloaded.
+- `vdb-validate` output is collected and catalogued to ensure integrity of reads downloaded. this output checks cryptographic hashs on the integrity of files downloaded from the SRA database. 
+- `md5` hashes are collected from each downloaded fastq file from fasterq-dump, these hashes will not match the SRA database hashes (due to format and options of application), but can be used for downstream integrity checks.

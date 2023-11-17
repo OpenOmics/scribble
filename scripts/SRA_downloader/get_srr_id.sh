@@ -31,32 +31,34 @@ function retry() {
 }
 
 SRR_ID=$1
-data_dir=$(pwd)
+data_dir=/my/data/directory/path
 lscratch=/lscratch/$SLURM_JOB_ID
+
 module purge
 module load sratoolkit
 echo "--- downloading $SRR_ID ---"
-#retry fasterq-dump --split-files --split-3 -F fastq -O /lscratch/$SLURM_JOB_ID --temp /lscratch/$SLURM_JOB_ID/tmp -p --threads 32 $SRR_ID
+
 cd $lscratch
 retry prefetch $SRR_ID
 vdb-validate $SRR_ID >> $data_dir/md5s/${SRR_ID}.validate
 fasterq-dump --split-files --split-3 -F fastq -p --threads 16 $SRR_ID
 cd $data_dir
+
 if [ -f /lscratch/$SLURM_JOB_ID/${SRR_ID}_1.fastq ]; then
-    echo "/lscratch/$SLURM_JOB_ID/${SRR_ID}_1.fastq" > /data/NIAMS_IDSS/dev/NIAMS-40/${SRR_ID}.md5
-    md5sum /lscratch/$SLURM_JOB_ID/${SRR_ID}_1.fastq >> /data/NIAMS_IDSS/dev/NIAMS-40/${SRR_ID}.md5
-    echo >> /data/NIAMS_IDSS/dev/NIAMS-40/${SRR_ID}.md5
-    echo "/lscratch/$SLURM_JOB_ID/${SRR_ID}_2.fastq" >> /data/NIAMS_IDSS/dev/NIAMS-40/${SRR_ID}.md5
-    md5sum /lscratch/$SLURM_JOB_ID/${SRR_ID}_2.fastq >> /data/NIAMS_IDSS/dev/NIAMS-40/${SRR_ID}.md5
-    echo >> /data/NIAMS_IDSS/dev/NIAMS-40/${SRR_ID}.md5
+    echo "/lscratch/$SLURM_JOB_ID/${SRR_ID}_1.fastq" > $data_dir/${SRR_ID}.md5
+    md5sum /lscratch/$SLURM_JOB_ID/${SRR_ID}_1.fastq >> $data_dir/${SRR_ID}.md5
+    echo >> $data_dir/${SRR_ID}.md5
+    echo "/lscratch/$SLURM_JOB_ID/${SRR_ID}_2.fastq" >> $data_dir/${SRR_ID}.md5
+    md5sum /lscratch/$SLURM_JOB_ID/${SRR_ID}_2.fastq >> $data_dir/${SRR_ID}.md5
+    echo >> $data_dir/${SRR_ID}.md5
     sed -i -r "s/(^[\@\+]SRR\S+)/\1\/1/" /lscratch/$SLURM_JOB_ID/${SRR_ID}_1.fastq
     sed -i -r "s/(^[\@\+]SRR\S+)/\1\/1/" /lscratch/$SLURM_JOB_ID/${SRR_ID}_2.fastq
-    pigz -c -9 -p 32 /lscratch/$SLURM_JOB_ID/${SRR_ID}_1.fastq > /data/NIAMS_IDSS/dev/NIAMS-40/SRA/${SRR_ID}_1.fastq.gz
-    pigz -c -9 -p 32 /lscratch/$SLURM_JOB_ID/${SRR_ID}_2.fastq > /data/NIAMS_IDSS/dev/NIAMS-40/SRA/${SRR_ID}_2.fastq.gz
+    pigz -c -9 -p 32 /lscratch/$SLURM_JOB_ID/${SRR_ID}_1.fastq > $data_dir/SRA/${SRR_ID}_1.fastq.gz
+    pigz -c -9 -p 32 /lscratch/$SLURM_JOB_ID/${SRR_ID}_2.fastq > $data_dir/SRA/${SRR_ID}_2.fastq.gz
 else
-    echo "/lscratch/$SLURM_JOB_ID/${SRR_ID}.fastq" > /data/NIAMS_IDSS/dev/NIAMS-40/${SRR_ID}.md5
-    md5sum /lscratch/$SLURM_JOB_ID/${SRR_ID}.fastq >> /data/NIAMS_IDSS/dev/NIAMS-40/md5s/${SRR_ID}.md5
+    echo "/lscratch/$SLURM_JOB_ID/${SRR_ID}.fastq" > $data_dir/${SRR_ID}.md5
+    md5sum /lscratch/$SLURM_JOB_ID/${SRR_ID}.fastq >> $data_dir/md5s/${SRR_ID}.md5
     sed -i -r "s/(^[\@\+]SRR\S+)/\1\/1/" /lscratch/$SLURM_JOB_ID/${SRR_ID}.fastq
-    pigz -c -9 -p 10 /lscratch/$SLURM_JOB_ID/${SRR_ID}.fastq > /data/NIAMS_IDSS/dev/NIAMS-40/SRA/${SRR_ID}.fastq.g
+    pigz -c -9 -p 10 /lscratch/$SLURM_JOB_ID/${SRR_ID}.fastq > $data_dir/SRA/${SRR_ID}.fastq.g
 fi
 rm /lscratch/$SLURM_JOB_ID/*.fastq

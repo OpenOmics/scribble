@@ -11,6 +11,8 @@ any other infrastructure that does not use lua environment modules to load softw
 
 ## get_srr_id.sh
 
+__Before using__: set `data_dir` to your storage directory
+
 This script is for single or serial collection of SRR ids. It will run `prefetch`, `vdb-validate`, and `fasterq-dump` in order then
 compress the reads for storage.
 

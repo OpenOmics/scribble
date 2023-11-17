@@ -2,7 +2,7 @@
 set -euo pipefail
 
 for srr in $@; do
-    echo "/vf/users/NIAMS_IDSS/dev/NIAMS-40/get_srr_id.sh ${srr}"
+    echo "./get_srr_id.sh ${srr}"
 done >> download_from_sra.sh
 
 chmod +x download_from_sra.sh

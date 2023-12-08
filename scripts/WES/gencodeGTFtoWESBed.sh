@@ -4,7 +4,7 @@ set -euo pipefail
 
 function err() { cat <<< "$@" 1>&2; }
 function fatal() { cat <<< "$@" 1>&2; exit 1; }
-function usage() { err "Usage: $0 /path/to/gencode.gtf > gencode_exons.bed"; }
+function usage() { err "Usage: $0 <gencode.gtf> <gencode_exons.bed>"; }
 
 function require(){
   # Requires an executable is in $PATH, 
@@ -25,16 +25,26 @@ function require(){
 function main() {
   # Main entry of script
 
-  # Check if user provided a
-  # input gtf file
-  [ -z "${1:-}" ] && usage && \
-    fatal "Error: Please provide a GENCODE GTF as input!"
   # Check if asked for usage
-  { [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; } && \
+  { [ "${1:-}" == "-h" ] || [ "${1:-}" == "--help" ]; } && \
     usage && exit 0
 
+  # Check if user provided a
+  # input gtf file
+  { [ -z "${1:-}" ] || [ -z "${2:-}" ]; } && usage && \
+   err && \
+   fatal "Error: Please provide a GENCODE GTF and output BED filename as input!"
+
   # Check for required tools
-  require bedtools gawk
+  require bedtools gawk tee
+
+  # Create output directory
+  # as needed
+  outdir=$(dirname "$2")
+  if [ ! -d "$outdir" ]; then
+    mkdir -p "$outdir" || \
+    fatal "Failed to create output directory: ${outdir}"
+  fi
 
   # BED files are 0-based while
   # GTF files are 1-based coordinates,
@@ -48,17 +58,26 @@ function main() {
     awk '!dup[$1,$2,$3,$6]++' | \
     # Parse exon_id, gene_id, and transcript_id
     # with gawk regex captured groups
-    awk -F '\t' -v OFS='\t' '{match($0, /exon_id "(\w+.\w+)";/, e); match($0, /gene_id "(\w+.\w+)";/, g); match($0, /transcript_id "(\w+.\w+)";/, t); print $1,$2,$3,$4"_"e[1],$5,$6, g[1], t[1]}' | \
+    awk -F '\t' -v OFS='\t' '{match($0, /exon_id "(\w+.\w+)";/, e); match($0, /gene_id "(\w+.\w+)";/, g); match($0, /transcript_id "(\w+.\w+)";/, t); print $1,$2,$3,$4"_"e[1],$5,$6,g[1],t[1],$4}' | \
     # Sort the resulting bed-like file
     bedtools sort | \
     # Merge overlapping regions on the 
     # same strand, collapse and output 
-    # metadata fields
-    bedtools merge -s  -c 4,5,6,7,8 -o distinct,distinct,distinct,distinct,distinct -delim '_' | \
+    # metadata fields:
+    #  4. set(GTFEntryLine#_ExonIDs)
+    #  5. set(Score)
+    #  6. set(Strand)
+    #  7. set(GeneIDs)
+    #  8. set(TranscriptIDs)
+    #  9. min(set(GTFEntryLine))
+    #  10. max(set(GTFEntryLine))
+    #  11. count(set(GTFEntryLine))
+    bedtools merge -s  -c 4,5,6,7,8,9,9,9 -o distinct,distinct,distinct,distinct,distinct,min,max,count -delim '_' | \
+    tee "${2%.bed}.gtf2bed_build.log" | \
     # Create name (4th) column in BED
     # file, formatted as follows:
-    # set(GTFEntryLine#_ExonIDs)_set(GeneIDs)_set(TranscriptIDs)
-    awk -F '\t' -v OFS='\t' '{print $1,$2,$3,$4"_"$7"_"$8,$5,$6}'
+    # Count_MergedExons_set(GeneID)_Line#FirstMergedExonEntry_Line#LastMergedExonEntry
+    awk -F '\t' -v OFS='\t' '{print $1,$2,$3,$11"_"$7"_"$9"_"$10,$5,$6}' > "$2"
 }
 
 

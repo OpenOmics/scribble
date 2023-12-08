@@ -76,8 +76,8 @@ function main() {
     tee "${2%.bed}.gtf2bed_build.log" | \
     # Create name (4th) column in BED
     # file, formatted as follows:
-    # Count_MergedExons_set(GeneID)_Line#FirstMergedExonEntry_Line#LastMergedExonEntry
-    awk -F '\t' -v OFS='\t' '{print $1,$2,$3,$11"_"$7"_"$9"_"$10,$5,$6}' > "$2"
+    # Line#FirstMergedExonEntry_Line#LastMergedExonEntry_CountMergedExons_set(GeneID)
+    awk -F '\t' -v OFS='\t' '{print $1,$2,$3,$9"_"$10"_"$11"_"$7,$5,$6}' > "$2"
 }
 
 

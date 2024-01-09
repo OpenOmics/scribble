@@ -1,0 +1,24 @@
+Guide to RStudio access via tunneling on Biowulf
+
+1. On Biowulf: set up interactive job with the added flag --tunnel
+2. On local machine: open a new terminal window and run ssh command that appears
+3. On Biowulf interactive session: ml R rstudio-server
+4. On Biowulf interactive session: rstudio-server
+5. Grab URL that appears and paste into Chrome
+6. You're now on Rstudio on Biowulf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

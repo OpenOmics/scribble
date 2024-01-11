@@ -76,18 +76,27 @@ function hpclink () {
     # given a path to a file in the 
     # datashare directory, by default,
     # it is setup to create URLs pointing
-    # /data/NCBR/datashare; however, this
-    # can be edited to point to other 
-    # datashare locations on Biowulf.
+    # /data/$shared_group/datashare.
     # $@ = Data to share 
-    # @RETURNS = Helix datashare links  
-    local prefix="/gpfs/gsfs11/users/NCBR/datashare/"; 
-    for f in "$@"; do 
-        abspath="$(readlink -e "$f")"; 
+    # @RETURNS = Helix datashare links
+    for f in "$@"; do
+        local prefix;
+        local group_name;
+        prefix=$(
+            readlink -e "$f" \
+            | awk -F '/datashare'  -v OFS='/' \
+                '{n=index($0,"/datashare"); $2=substr($0,n+1); NF=2; print $1,"datashare/"}'
+        );
+        group_name=$(
+            readlink -e "$f" \
+            | awk -F '/datashare' '{print $1}' \
+            | awk -F '/' '{print $NF}'
+        );
+        abspath="$(readlink -e "$f")";
         if [[ "$abspath" =~ ^"$prefix" ]]; then 
             link=$(
                 echo "$abspath" \
-                | sed "s@^$prefix@https:\/\/hpc.nih.gov/\~NCBR/@g"
+                | sed "s@^$prefix@https:\/\/hpc.nih.gov/\~${group_name}/@g"
             ); 
             echo "$link"; 
         fi; 

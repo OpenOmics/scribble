@@ -1,0 +1,15 @@
+#this line will be ignored
+out_prefix=Prefix #entry after this pound sign will be ignored
+cdr3_file=cdr3_file.txt
+hla_file =hla_file.txt
+refer_file=ref_file.txt
+v_usage_freq_file=ref_V.txt
+cdr3_length_freq_file=ref_L.txt
+local_min_pvalue=0.001
+p_depth = 1000
+global_convergence_cutoff = 1
+simulation_depth=1000
+kmer_min_depth=3
+local_min_OVE=10
+algorithm=GLIPH2
+all_aa_interchangeable=1

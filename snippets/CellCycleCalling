@@ -20,3 +20,16 @@ s_genes <- cell_cycle_markers %>% dplyr::filter(phase == "S") %>% pull("gene_nam
         
 # Acquire the G2M phase genes        
 g2m_genes <- cell_cycle_markers %>% dplyr::filter(phase == "G2/M") %>% pull("gene_name")
+
+
+Alternative method using gprofilier2
+# Method found here: https://github.com/satijalab/seurat/issues/2493
+
+library(gprofiler2)
+s.genes <- cc.genes$s.genes
+g2m.genes <- cc.genes$g2m.genes
+mmus_s = gorth(cc.genes$s.genes, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+mmus_g2m = gorth(cc.genes$g2m.genes, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+
+seurat_object <- CellCycleScoring(seurat_object, s.features = mmus_s, g2m.features = mmus_g2m, set.ident = TRUE)

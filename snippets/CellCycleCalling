@@ -1,0 +1,22 @@
+Cell cycle calling prep for mouse samples in Seurat
+
+
+# from: https://hbctraining.github.io/scRNA-seq/lessons/cell_cycle_scoring.html
+cc_file <- getURL("https://raw.githubusercontent.com/hbc/tinyatlas/master/cell_cycle/Mus_musculus.csv") 
+cell_cycle_genes <- read.csv(text = cc_file)
+
+ah <- AnnotationHub()
+ahDb <- query(ah, pattern = c("Mus musculus", "EnsDb"), 
+              ignore.case = TRUE)
+id <- ahDb %>% mcols() %>% rownames() %>% tail(n = 1)
+edb <- ah[[id]]
+annotations <- genes(edb, return.type = "data.frame")
+annotations <- annotations %>%
+        dplyr::select(gene_id, gene_name, seq_name, gene_biotype, description)
+
+cell_cycle_markers <- dplyr::left_join(cell_cycle_genes, annotations, by = c("geneID" = "gene_id"))
+# Acquire the S phase genes
+s_genes <- cell_cycle_markers %>% dplyr::filter(phase == "S") %>% pull("gene_name")
+        
+# Acquire the G2M phase genes        
+g2m_genes <- cell_cycle_markers %>% dplyr::filter(phase == "G2/M") %>% pull("gene_name")

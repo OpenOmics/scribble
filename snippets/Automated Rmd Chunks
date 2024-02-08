@@ -1,0 +1,9 @@
+Here's an example of code to put into an Rmd so that you can run Rmd chunks as a loop.
+
+template <- c("### {{clusters}}\n",
+              "```{r dimsp{{clusters}} }\n",
+              "DimPlotWithPropSplit(main, clusters = '{{clusters}}')\n",
+              "```\n\n")
+
+umaps_split = lapply(paste0('seurat_clusters',1:5), function(clusters)
+ knitr::knit_expand(text = template))

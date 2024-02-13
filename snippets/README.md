@@ -79,20 +79,21 @@ function hpclink () {
     # /data/$shared_group/datashare.
     # $@ = Data to share 
     # @RETURNS = Helix datashare links
+    function abspath () { p=$(echo "$(cd "$(dirname "$1")" && pwd -L)/$(basename "$1")"); if [ -f "$p" ]; then echo "$p"; else echo ""; fi; }
     for f in "$@"; do
         local prefix;
         local group_name;
         prefix=$(
-            readlink -e "$f" \
+            abspath "$f" \
             | awk -F '/datashare'  -v OFS='/' \
                 '{n=index($0,"/datashare"); $2=substr($0,n+1); NF=2; print $1,"datashare/"}'
         );
         group_name=$(
-            readlink -e "$f" \
+            abspath "$f" \
             | awk -F '/datashare' '{print $1}' \
             | awk -F '/' '{print $NF}'
         );
-        abspath="$(readlink -e "$f")";
+        abspath="$(abspath "$f")";
         if [[ "$abspath" =~ ^"$prefix" ]]; then 
             link=$(
                 echo "$abspath" \

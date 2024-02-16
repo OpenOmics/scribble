@@ -29,4 +29,5 @@ Order of processing:
 8. Set up bedToBigBed tool. Make sure its in a folder you can point to.  
 `wget -O bedToBigBed http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedToBigBed`  
 `chmod +x bedToBigBed`  
-9. Run scenic+: This step only works on Biowulf when n_cpu=1 so it takes a lot of time to run. It also uses a lot of memory; I ended up setting the lscratch to 900 for 20k scRNA and 20k scATAC cells
+9. Run scenic+: This step only works on Biowulf when n_cpu=1 so it takes some time to run. It also uses a lot of memory; I ended up setting the lscratch to 900 for 20k scRNA and 20k scATAC cells and that still wasn't sufficient. If it needs more temp space, it will give a "Ray storage space" error. I ended up needing around 5T for 24h.
+10. See https://scenicplus.readthedocs.io/en/latest/pbmc_multiome_tutorial.html for good documentation on how to access the results, do some minor cleanup, and create some basic figures.  

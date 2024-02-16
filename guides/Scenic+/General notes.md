@@ -1,3 +1,5 @@
+As learned by Katie Hornick and Tovah Markowitz
+
 All scripts here are examples and need some tuning for each individual project, but notes are included in each to suggest where these changes need to take place.
 
 

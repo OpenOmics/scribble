@@ -23,3 +23,10 @@ Order of processing:
 3. pycistopic_model.py: part1 in processing scATAC data, may need to be run multiple times, see note in script about changing cpu requirements, takes a number of hours to run
 4. pycistopic_part2.py: part2 in processing of scATAC data
 5. pycistarget.py: part3 in processing if scATAC data, requires 6 cpus, assume over an hour of run time
+6. scenic+_prep.py: combine information from pycistopic, pycistarget, and scRNA information into a single object  
+
+
+#wget -O utoronto_human_tfs_v_1.01.txt  http://humantfs.ccbr.utoronto.ca/download/v_1.01/TF_names_v_1.01.txt
+
+#wget -O Th1Polar_scenic_bigbed/bedToBigBed http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedToBigBed
+#chmod +x Th1Polar_scenic_bigbed/bedToBigBed

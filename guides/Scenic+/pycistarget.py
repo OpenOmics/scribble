@@ -57,4 +57,6 @@ cistarget_dict = run_pycistarget(
     annotation_version = 'v10nr_clust',
     )
 
+# All motif analysis results end up in save_path
 # outputs are saved in menr.pkl
+# html reports of all motif analyses will also be located there

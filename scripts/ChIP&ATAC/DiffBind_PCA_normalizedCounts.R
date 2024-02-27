@@ -6,22 +6,25 @@
 # Research Technologies Branch/DIR/NIAID
 #
 # Created: December 7, 2022
+# Updated: February 27, 2024
 # 
 ####################
 #
-# Purpose: To get PCA data and TMM/RPKM values for ChIP-seq or ATAC-seq.
-#          Uses code from DiffBind version 2. Note: some lines of the code
-#          are specifically set to match current in OpenOmics pipelines.
-#
+# Purpose: To get PCA data and TMM/RPKM values for chrom-seek data.
+#          Uses code from DiffBind version 2. 
+# 
 # For use on biowulf:
-#    sinteractive --mem=50G --gres=lscratch:200 --cpus-per-task=16
-#    module load R/3.5
+#    sinteractive --mem=50G --gres=lscratch:200 --cpus-per-task=4
+# 
+#  This is to load DiffBind v2. Make sure you list all directories you will need access to directly after the -B flag.
+#    module load singularity.
+#    singularity exec -B /data/NHLBI_IDSS,/data/OpenOmics,$PWD /data/OpenOmics/SIFs/cfchip_toolkit_v0.4.0.sif /bin/bash
 #
 # Functions:
 #    PCApeaks(csvfile, outroot)
 #                To get PCA data using only peak positions
 #
-#    PCAcounts(csvfile, outroot, method="ChIP", counts=TRUE)
+#    PCAcounts(csvfile, outroot, counts=TRUE)
 #                To get PCA on consensus peaks with TMM-normalized
 #                counts with ability to also save per sample
 #                TMM- and RPKM-normalized counts
@@ -29,7 +32,6 @@
 # Variables:
 #    csvfile: the name of the csvfile that DiffBind uses to the load all the data
 #    outroot: a string to add to the start of all output file names
-#    method:  options are "ChIP" or "ATAC"
 #    counts:  whether or not to make files of TMM- and RPKM-normalized
 #             data for all consensus peaks across all samples
 #
@@ -37,6 +39,7 @@
 ####################
 
 suppressMessages(library(DiffBind))
+library(parallel)
 
 pv.pcmask <- function(pv,numSites, mask, sites,removeComps,cor=F,bLog=T){
    
@@ -129,11 +132,9 @@ PCApeaks <- function(csvfile, outroot) {
   PCAbasic(pv,outfile)
 }
 
-PCAcounts <- function(csvfile, outroot, method="ChIP", counts=TRUE) {
+PCAcounts <- function(csvfile, outroot, counts=TRUE) {
   samples <- dba(sampleSheet=csvfile)
-  if (method == "ATAC") {
-    DBdataCounts <- dba.count(samples, bRemoveDuplicates=T)
-  } else if ( grepl("narrow",samples$samples$Peaks[1]) ) {
+  if ( grepl("narrow",samples$samples$Peaks[1]) ) {
     DBdataCounts <- dba.count(samples, summits=250)
   } else {
     DBdataCounts <- dba.count(samples)

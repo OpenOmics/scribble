@@ -60,6 +60,7 @@ def main(args):
 
     if parsed_data:
         df = pd.DataFrame(parsed_data)
+        df = df[df['Max Score'].str.replace('.', '').astype(float) > 0.0]
         df = df.sort_values(by=['Seq1', 'Seq2', 'Tot Score'], ascending=[False, False, True])
         df.to_csv(args.output, sep='\t', index=False)
     else:

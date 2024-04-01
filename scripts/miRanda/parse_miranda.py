@@ -60,7 +60,7 @@ def main(args):
 
     if parsed_data:
         df = pd.DataFrame(parsed_data)
-        df = df.sort_values(by=['Seq1', 'Seq2', 'Tot Score'])
+        df = df.sort_values(by=['Seq1', 'Seq2', 'Tot Score'], ascending=[False, False, True])
         df.to_csv(args.output, sep='\t', index=False)
     else:
         raise ValueError('Empty `parsed_data`: ' + str(parsed_data))

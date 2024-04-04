@@ -6,6 +6,7 @@
 # Research Technologies Branch/DIR/NIAID
 #
 # Created: March 18, 2024
+# Edited: April 4, 2024
 # 
 #
 # Important Notes:
@@ -16,6 +17,10 @@
 #      3. Plotting function is hard-coded for 4 samples
 #      4. Focus is on TSS sites with equal distance on either side
 #      5. All genes are reoriented so that the first nucleosome is to the right of the TSS
+#
+# Note: With update, it is now possible to look at the midpoints of any regions/peaks ignoring 
+#       orientation. Again you will add an equal distance on both sides.
+#           
 #
 ##############
 # PACKAGES
@@ -58,6 +63,14 @@ getGeneStarts <- function(geneCoords) {
                                start(geneCoords), end(geneCoords))
    end(geneStarts) <- start(geneStarts)
    return(geneStarts)
+}
+
+getPeakMids <- function(bedFile) {
+    bedData <- import(bedFile)
+    bedMid <- bedData
+    start(bedMid) <- ( start(bedMid) + end(bedMid) ) /2
+    end(bedMid) <- start(bedMid)
+    return(bedMid)
 }
 
 createMatrices <- function(bwFiles, inCoords, extendValue=10000) {
@@ -105,6 +118,10 @@ geneCoords <- getGeneCoords(geneSymbols)
 geneStarts <- getGeneStarts(geneCoords)
 
 mats <- createMatrices(bws, geneStarts, extendValue=10000)
+
+### For peak midpoint focus:
+peakMids <- getPeakMids(bedFile) # where bedFile is the name of the file
+mats <- createMatrices(bws, peakMids, extendValue=1000)
 
 ymax <- quantile(unlist(mats), 0.975)
 col_fun = colorRamp2(quantile(unlist(mats), c(0.05, 0.6,0.85,0.925,0.975)),

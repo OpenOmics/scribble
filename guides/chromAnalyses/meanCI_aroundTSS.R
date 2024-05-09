@@ -68,7 +68,7 @@ for (j in 1:length(Groups)) {
       # averaged. Use a higher window size to decrease the size of the final image
       # as files can become large but greater than 300 bins per inch on a graphic
       # tends to be useless
-      tmp <- normalizeToMatrix(signal, bed_starts,
+      tmp <- normalizeToMatrix(signal, bed_starts2,
                                extend=c(3000, 3000), w=25,
                                mean_mode="weighted", value_column="score")
       tmpMean <- colMeans(tmp, na.rm = T)

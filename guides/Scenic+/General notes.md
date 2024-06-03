@@ -2,11 +2,17 @@ As learned by Katie Hornick and Tovah Markowitz
 
 All scripts here are examples and need some tuning for each individual project, but notes are included in each to suggest where these changes need to take place.
 
+Updated notes as of 6/3/24:
+1. The newest version of scenic+ now uses python/3.11 which is not available on Biowulf yet.
+2. These documents are for the version that had been available back in 11/23 (now found in the github branch called "old")
+3. The version created to use this documentation did not work with all samples analyzed. Reason unknown.
+4. New versions of Ray do not allow more than 10 threads to be used simultaneously, does not like usage of lscratch, and can not have more than one job run in parallel.
 
 Tool documentation comes from:  
 https://pycistopic.readthedocs.io/en/latest/index.html  
 https://pycistarget.readthedocs.io/en/latest/index.html  
-https://scenicplus.readthedocs.io/en/latest/index.html
+https://scenicplus.readthedocs.io/en/latest/index.html 
+   --now at https://github.com/aertslab/scenicplus/tree/old/notebooks
 
 
 The attached scripts take all the information from these various tool websites and streamlines them to one general pipeline.

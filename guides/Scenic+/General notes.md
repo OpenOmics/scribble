@@ -7,11 +7,12 @@ Updated notes as of 6/3/24:
 2. These documents are for the version that had been available back in 11/23 (now found in the github branch called "old")
 3. The version created to use this documentation did not work with all samples analyzed. Reason unknown.
 4. New versions of Ray do not allow more than 10 threads to be used simultaneously, does not like usage of lscratch, and can not have more than one job run in parallel.
+5. To use the current version of scenic+, access https://github.com/OpenOmics/dockerfiles/tree/main/scenicplus/1.0a1.
 
 Tool documentation comes from:  
 https://pycistopic.readthedocs.io/en/latest/index.html  
 https://pycistarget.readthedocs.io/en/latest/index.html  
-https://scenicplus.readthedocs.io/en/latest/index.html 
+https://scenicplus.readthedocs.io/en/latest/index.html  
    --now at https://github.com/aertslab/scenicplus/tree/old/notebooks
 
 
@@ -28,7 +29,7 @@ This pipeline assumes the following:
 Order of processing:  
 1. prep_conda.sh: To set up the conda environment containing all necessary packages  
 2. seurat_scenic_prep.R: To convert seurat/signac objects to files that can be used by python  
-3. pycistopic_model.py: part1 in processing scATAC data, may need to be run multiple times, see note in script about changing cpu requirements, takes a number of hours to run
+3. pycistopic_model.py: part1 in processing scATAC data, may need to be run multiple times, see note in script about changing cpu requirements, takes a number of hours/days to run
 4. pycistopic_part2.py: part2 in processing of scATAC data
 5. pycistarget.py: part3 in processing if scATAC data, requires 6 cpus, assume over an hour of run time
 6. scenic+_prep.py: combine information from pycistopic, pycistarget, and scRNA information into a single object  

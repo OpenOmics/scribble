@@ -1,19 +1,22 @@
+# General notes
+
 As learned by Katie Hornick and Tovah Markowitz
 
 All scripts here are examples and need some tuning for each individual project, but notes are included in each to suggest where these changes need to take place.
 
-Updated notes as of 6/3/24:
+**Updated notes as of 6/3/24:**
 1. The newest version of scenic+ now uses python/3.11 which is not available on Biowulf yet.
 2. These documents are for the version that had been available back in 11/23 (now found in the github branch called "old")
 3. The version created to use this documentation did not work with all samples analyzed. Reason unknown.
 4. New versions of Ray do not allow more than 10 threads to be used simultaneously, does not like usage of lscratch, and can not have more than one job run in parallel.
 5. To use the current version of scenic+, access https://github.com/OpenOmics/dockerfiles/tree/main/scenicplus/1.0a1.
 
-Tool documentation comes from:  
-https://pycistopic.readthedocs.io/en/latest/index.html  
-https://pycistarget.readthedocs.io/en/latest/index.html  
-https://scenicplus.readthedocs.io/en/latest/index.html  
-   --now at https://github.com/aertslab/scenicplus/tree/old/notebooks
+
+**Tool documentation comes from:** 
+- https://pycistopic.readthedocs.io/en/latest/index.html  
+- https://pycistarget.readthedocs.io/en/latest/index.html  
+- https://scenicplus.readthedocs.io/en/latest/index.html 
+  - https://github.com/aertslab/scenicplus/tree/old/notebooks
 
 
 The attached scripts take all the information from these various tool websites and streamlines them to one general pipeline.
@@ -26,12 +29,149 @@ This pipeline assumes the following:
 4. This code assumes that the scATAC and scRNA are not from the same cells. If this is not true, you will need to adapt some steps in the scenic+ preparation steps.  
 
 
-Order of processing:  
-1. prep_conda.sh: To set up the conda environment containing all necessary packages  
+## Getting started
+
+**Order of processing:**  
+
+1. Pull our [scenicplus docker image](https://hub.docker.com/r/skchronicles/scenicplusc) with singularity.
+```bash
+module load singularity
+SINGULARITY_CACHEDIR=$PWD/.${USER} singularity pull -F docker://skchronicles/scenicplus:v0.1.0
+```
 2. seurat_scenic_prep.R: To convert seurat/signac objects to files that can be used by python  
-3. pycistopic_model.py: part1 in processing scATAC data, may need to be run multiple times, see note in script about changing cpu requirements, takes a number of hours/days to run
+3. pycistopic_model.py: part1 in processing scATAC data, may need to be run multiple times, see note in script about changing cpu requirements, takes a number of hours/days to run.
+
+Here is an example of how to setup and run this on Biowulf:
+```bash
+# Create a tmp directory for this run, 
+# so ray has its own dedicated workspace
+mkdir -p tmp;
+export tmp="$(mktemp -d -p "$PWD/tmp")";
+echo "Created tmp directory: $tmp"
+
+# Create SLURM jobs script to run 
+# the pycistopic_model_CD8.py script
+cat << EOF > run_scenicplus_models.sh
+#!/usr/bin/env bash
+#SBATCH --job-name=scenicplus
+#SBATCH --mail-type=END,FAIL
+#SBATCH --time=2-00:00:00
+#SBATCH --mem=300G
+#SBATCH --cpus-per-task=10
+
+set -e
+module load singularity;
+
+# Change to the directory where the 
+# pycistopic_model_CD8.py script is
+# located. The input files to the 
+# script should also be in the same 
+# directory as the script.
+cd /data/path/to/project/scenic/;
+
+echo "Starting to run scenicplus script"
+# Please do not increase the number of
+# CPUs in the pycistopic_model_CD8.py 
+# script to more than 8. Increasing the 
+# number of CPUs will cause ray workers 
+# to unexpectedly error out. There is 
+# an unresolved bug in ray that causes
+# this issue. 
+singularity exec -c -B $PWD,${tmp}:/tmp scenicplus_v0.1.0.sif /bin/bash -c "cd $PWD; python $PWD/pycistopic_model_CD8.py"
+echo "Exit-code of scenicplus: $?"
+EOF
+
+# Submit the job to the cluster
+chmod +x run_scenicplus_models.sh
+sbatch run_scenicplus_models.sh
+```
+
 4. pycistopic_part2.py: part2 in processing of scATAC data
+
+Here is an example of how to setup and run this on Biowulf:
+```bash
+# Create a tmp directory for this run, 
+# so ray has its own dedicated workspace
+mkdir -p tmp;
+export tmp="$(mktemp -d -p "$PWD/tmp")";
+echo "Created tmp directory: $tmp"
+
+# Create SLURM jobs script to run 
+# the pycistopic_part2.py script
+cat << EOF > run_scenicplus_part2.sh
+#!/usr/bin/env bash
+#SBATCH --job-name=scenicplus
+#SBATCH --mail-type=END,FAIL
+#SBATCH --time=2-00:00:00
+#SBATCH --mem=300G
+#SBATCH --cpus-per-task=8
+
+set -e
+module load singularity;
+
+# Change to the directory where the 
+# pycistopic_part2.py script is
+# located. The input files to the 
+# script should also be in the same 
+# directory as the script.
+cd /data/path/to/project/scenic/;
+
+echo "Starting to run scenicplus script"
+singularity exec -c -B $PWD,${tmp}:/tmp scenicplus_v0.1.0.sif /bin/bash -c "cd $PWD; python $PWD/pycistopic_part2.py"
+echo "Exit-code of scenicplus: $?"
+EOF
+
+# Submit the job to the cluster
+chmod +x run_scenicplus_part2.sh
+sbatch run_scenicplus_part2.sh
+```
+
 5. pycistarget.py: part3 in processing if scATAC data, requires 6 cpus, assume over an hour of run time
+
+Here is an example of how to setup and run this on Biowulf:
+```bash
+# Create a tmp directory for this run, 
+# so ray has its own dedicated workspace
+mkdir -p tmp;
+export tmp="$(mktemp -d -p "$PWD/tmp")";
+echo "Created tmp directory: $tmp"
+
+# Create SLURM jobs script to run 
+# the pycistarget.py script
+cat << EOF > run_scenicplus_pycistarget.sh
+#!/usr/bin/env bash
+#SBATCH --job-name=scenicplus
+#SBATCH --mail-type=END,FAIL
+#SBATCH --time=2-00:00:00
+#SBATCH --mem=300G
+#SBATCH --cpus-per-task=8
+
+set -e
+module load singularity;
+
+# Change to the directory where the 
+# pycistarget.py script is located. 
+# The input files to the script 
+# should also be in the same 
+# directory as the script.
+cd /data/path/to/project/scenic/;
+
+echo "Starting to run scenicplus script"
+# Please do not increase the number of
+# CPUs in the pycistarget.py 
+# script to more than 8. Increasing the 
+# number of CPUs will cause ray workers 
+# to unexpectedly error out. There is 
+# an unresolved bug in ray that causes
+# this issue. 
+singularity exec -c -B $PWD,${tmp}:/tmp scenicplus_v0.1.0.sif /bin/bash -c "cd $PWD; python $PWD/pycistarget.py"
+echo "Exit-code of scenicplus: $?"
+EOF
+
+# Submit the job to the cluster
+chmod +x run_scenicplus_pycistarget.sh
+sbatch run_scenicplus_pycistarget.sh
+```
 6. scenic+_prep.py: combine information from pycistopic, pycistarget, and scRNA information into a single object  
 7. Get the TF names and known target tables. See example below for human or try https://github.com/aertslab/scenicplus/tree/main/resources.  
 `wget -O utoronto_human_tfs_v_1.01.txt  http://humantfs.ccbr.utoronto.ca/download/v_1.01/TF_names_v_1.01.txt`  

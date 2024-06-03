@@ -20,10 +20,11 @@ cistopic_obj = create_cistopic_object(fragment_matrix=count_matrix2)
 cistopic_obj.add_cell_data(cell_data)
 
 # Try various n_topics ranging between 2 and 50 until you get what you like
-# n_cpu should be at least as many as the number of topics
+# n_cpu should be at least as many as the number of topics. Please do not
+# set n_cpus to more than 8, it will cause ray to error out!
 models=run_cgs_models(cistopic_obj,
-                    n_topics=[2,5,7,10,12,15,20,25,30,35,40,45,50],
-                    n_cpu=14, #5
+                    n_topics=[5,10,15,20,25,30,40,50],
+                    n_cpu=8,
                     n_iter=500, random_state=555,
                     alpha=50, alpha_by_topic=True,
                     eta=0.1, eta_by_topic=False,

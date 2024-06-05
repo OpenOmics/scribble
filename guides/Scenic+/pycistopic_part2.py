@@ -16,6 +16,8 @@ import pickle
 count_matrix2=pd.read_csv('peak_counts_Th1Polar.csv', sep=',',index_col=0)
 cell_data =  pd.read_csv('ATAC_metadata_Th1Polar.txt', sep='\t',index_col=0)
 
+# I chose "CellType" as the variable name to split the population on. 
+#     The variable name needs to be constant between the scRNA and scATAC metadata files and have the same set of potential values.
 # I needed to change the metadata information so that it would be identical between scATAC and scRNA
 cell_data['CellType'] = np.where(cell_data['dataset'] == 'AB4710', 'Th1', 'Polar')
 
@@ -34,6 +36,8 @@ model = evaluate_models(models,
 # Let the tool name the ideal model as seen in the pdf
 cistopic_obj.add_LDA_model(model)
 pickle.dump(cistopic_obj, open('pycistopic.pkl','wb'))
+
+# As of June 2024, pycistopic has a new heatmap that may be informative, but it is not included in the docker container Skyler built.
 
 # Find modules/topics of variable bins/peaks
 region_bin_topics_otsu = binarize_topics(cistopic_obj, method='otsu', #ntop=3000,

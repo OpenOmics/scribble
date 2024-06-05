@@ -10,6 +10,8 @@ from pycisTopic.topic_qc import *
 from pycisTopic.diff_features import *
 import pickle
 
+# Lines 16-34 are identical to lines in pycistopic_part1.py other than line 28.
+
 # Load scATAC data
 count_matrix2=pd.read_csv('peak_counts_Th1Polar.csv', sep=',',index_col=0)
 cell_data =  pd.read_csv('ATAC_metadata_Th1Polar.txt', sep='\t',index_col=0)
@@ -36,6 +38,11 @@ cistopic_obj.add_LDA_model(model)
 pickle.dump(cistopic_obj, open('pycistopic.pkl','wb'))
 
 # As of June 2024, pycistopic has a new heatmap that may be informative, but it is not included in the docker container Skyler built.
+
+# The next steps are about binarization methods, ie actually grouping the cells into topics.
+# We are using one of the methods suggested for scenic+. There are plenty of alternatives, but we're not exactly sure what they do.
+# Also, the output figures and QC metrics aren't super helpful. If you figure out how to interpret them, please add documentation on scribbles.
+# If the red line looks to be in the wrong place on any of the panels there is an option to change it, but it is not something we have explored.
 
 # Find modules/topics of variable bins/peaks
 region_bin_topics_otsu = binarize_topics(cistopic_obj, method='otsu', #ntop=3000,

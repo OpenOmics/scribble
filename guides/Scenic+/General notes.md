@@ -39,16 +39,10 @@ SINGULARITY_CACHEDIR=$PWD/.${USER} singularity pull -F docker://skchronicles/sce
 2. seurat_scenic_prep.R: To convert seurat/signac objects to files that can be used by python  
 3. pycistopic_model.py: part1 in processing scATAC data, typically takes 1-5 days to run and requires 200-500G of memory. Memory spike should happen within the first 2 hours. Each model will require 1 thread, but Ray only allows up to 10 threads. See details in python script. See submission_scripts.md for example run command.  
 4. pycistopic_part2.py: part2 in processing of scATAC data. This step is very fast compared to the previous step, requires only 1 thread, and typically needs 50-200G of memory. See submission_scripts.md for example run command.  
-5. a. pycistarget.py: part3 in processing if scATAC data only, requires 6 cpus, assume over an hour of run time. See submission_scripts.md for example run command. This is the last step if there is only scATAC data. Note: Not tested on dockerized version of the pipeline.  
+5. a. pycistarget.py: part3 in processing if scATAC data only, requires 6 cpus, assume over an hour of run time. See submission_scripts.md for example run command. This is the last step if there is only scATAC data. Note: Not tested on dockerized version of the pipeline. **OR**  
    b. pycistarget_snakemake_prep.py: runs the first half of the pycistarget.py script to put pycistopic_part2.py outputs into the correct format for the snakemake pipeline  
-6. Create custom cistarget database. This is a new step in the pipeline that we have not tested.  
-
-
-6. scenic+_prep.py: combine information from pycistopic, pycistarget, and scRNA information into a single object  
-7. Get the TF names and known target tables. See example below for human or try https://github.com/aertslab/scenicplus/tree/main/resources.  
-`wget -O utoronto_human_tfs_v_1.01.txt  http://humantfs.ccbr.utoronto.ca/download/v_1.01/TF_names_v_1.01.txt`  
-8. Set up bedToBigBed tool. Make sure its in a folder you can point to.  
-`wget -O bedToBigBed http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedToBigBed`  
-`chmod +x bedToBigBed`  
-9. Run scenic+: This step only works on Biowulf when n_cpu=1 so it takes some time to run. It also uses a lot of memory; I ended up setting the lscratch to 900 for 20k scRNA and 20k scATAC cells and that still wasn't sufficient. If it needs more temp space, it will give a "Ray storage space" error. I ended up needing around 5T for 24h.
-10. See https://scenicplus.readthedocs.io/en/latest/pbmc_multiome_tutorial.html for good documentation on how to access the results, do some minor cleanup, and create some basic figures.  
+6. a. Create custom cistarget database. This is a new step in the pipeline that we have not tested. **OR**  
+   b. Get required files from https://resources.aertslab.org/cistarget/. For hg38, they are:  
+         - ctx_db file/rankings file: hg38_screen_v10_clust.regions_vs_motifs.rankings.feather  
+         - dem_db file/scores file: hg38_screen_v10_clust.regions_vs_motifs.scores.feather  
+         - motif_annotations: motifs-v10nr_clust-nr.hgnc-m0.001-o0.0.tbl  

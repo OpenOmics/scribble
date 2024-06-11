@@ -25,7 +25,7 @@ This pipeline assumes the following:
     - If you only have scATAC, you can run all pycistopic and pycistarget steps, but none of the scenic+.  
     - If you only have scRNA, look into scenic instead of scenic+.  
 2. This code is written to compare at least two conditions/cell types. If this is not true, you will need to adapt some steps.  
-3. All conditions that are going to be compared should have the same labels and metadata header for scRNA and scATAC. You will only be able to look at one metadata column per analysis.  
+3. All conditions that are going to be compared should have the same labels and metadata header for scRNA and scATAC. You will only be able to look at one metadata column per analysis. In the example scripts, this is called "CellType".  
 4. This code assumes that the scATAC and scRNA are not from the same cells. If this is not true, you will need to adapt some steps in the scenic+ preparation steps.  
 
 

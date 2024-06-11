@@ -132,3 +132,27 @@ chmod +x run_scenicplus_pycistarget.sh
 sbatch run_scenicplus_pycistarget.sh
 ```
 
+## Run pycistarget_snakemake_prep.py
+```bash
+
+set -e
+module load singularity;
+
+# Change to the directory where the 
+# pycistarget_snakemake_prep.py script is located. 
+# The input files to the script 
+# should also be in the same 
+# directory as the script.
+cd /data/path/to/project/scenic/;
+
+mkdir bedfiles
+
+echo "Starting to run scenicplus script"
+singularity exec -c -B $PWD,${tmp}:/tmp scenicplus_v0.1.0.sif /bin/bash -c "cd $PWD; python $PWD/pycistarget_snakemake_prep.py"
+echo "Exit-code of scenicplus: $?"
+EOF
+
+# run as part of an interactive job, needs less than 1G ram and 1 thread
+chmod +x run_scenicplus_pycistarget.sh
+sh run_scenicplus_pycistarget_snakemake_prep.sh
+```

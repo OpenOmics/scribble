@@ -194,3 +194,33 @@ chmod +x initialize_snakemake.sh
 sh initialize_snakemake.sh
 ```
 
+## Run snakemake
+```bash
+
+# Create script to run snakemake
+cat << EOF > run_snakemake.sh
+#!/usr/bin/env bash
+#SBATCH --job-name=scenic
+#SBATCH --mail-user=markowitzte@nih.gov
+#SBATCH --mail-type=END,FAIL
+#SBATCH --time=5-00:00:00
+#SBATCH --mem=200G
+#SBATCH --cpus-per-task=20
+
+set -e
+
+ml singularity; 
+
+cd /data/path/to/project/scenic/;
+
+echo "Starting to run scenicplus script"
+
+singularity exec --cwd $PWD -c -B $PWD,/data/path/to/temp/space scenicplus_v0.1.0.sif /bin/bash -c "cd /data/path/to/project/scenic/scplus_snakemake/Snakemake; snakemake --cores 20"
+
+echo "Exit-code of scenicplus script: $?"
+EOF
+
+# Submit the job to the cluster
+chmod +x run_snakemake.sh
+sbatch run_snakemake.sh
+```

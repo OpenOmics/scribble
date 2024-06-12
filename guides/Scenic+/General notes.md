@@ -46,3 +46,6 @@ SINGULARITY_CACHEDIR=$PWD/.${USER} singularity pull -F docker://skchronicles/sce
          - ctx_db file/rankings file: hg38_screen_v10_clust.regions_vs_motifs.rankings.feather  
          - dem_db file/scores file: hg38_screen_v10_clust.regions_vs_motifs.scores.feather  
          - motif_annotations: motifs-v10nr_clust-nr.hgnc-m0.001-o0.0.tbl  
+7. Initialize the snakemake directory. See submission_scripts.md for example run command.  
+8. Update config.yaml file and replace version in initialized directory in Snakemake/config subfolder. See config_notes.md for details on options.
+9. Run snakemake. See submission_scripts.md for example run command.

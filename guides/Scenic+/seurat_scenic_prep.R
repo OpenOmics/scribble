@@ -17,11 +17,15 @@
 ## Step 6. convertSeuratRNA(RNA,"scRNA")
 ##         RNAm <- data.frame(RNA@meta.data)
 ##         write.table(RNAm,"RNA_metadata.txt",quote=F,sep="\t")
-## Step 7: Optional: only required when data has been integrated
+## Step 7: Optional: only required when data has been integrated or merged
 ##               Need to have counts, data, and scale.data or information can end up 
 ##               with the incorrect label in the new format.
 ##               see: https://mojaveazure.github.io/seurat-disk/reference/Convert.html
 ##         convertSeuratRNA2(RNA,"scRNA2")
+##
+##      You'll know you picked the correct scRNA script if you see this exact line in the
+##      output message:
+##      "Adding counts from RNA as raw" 
 
 #####################################
 # Packages

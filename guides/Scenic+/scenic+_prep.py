@@ -1,3 +1,5 @@
+##DEPRECIATED##
+
 #!/usr/bin/env python3
 
 # source .scenicPlus_env/bin/activate

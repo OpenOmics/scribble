@@ -135,6 +135,10 @@ sbatch run_scenicplus_pycistarget.sh
 ## Run pycistarget_snakemake_prep.py
 ```bash
 
+# Create script to run 
+# the pycistarget_snakemake_prep.py script
+cat << EOF > run_scenicplus_pycistarget_snakemake_prep.sh
+#!/bin/bash
 set -e
 module load singularity;
 
@@ -145,6 +149,7 @@ module load singularity;
 # directory as the script.
 cd /data/path/to/project/scenic/;
 
+# make sure this matches hardcorded directory name in pycistarget_snakemake_prep.py
 mkdir bedfiles
 
 echo "Starting to run scenicplus script"
@@ -156,3 +161,36 @@ EOF
 chmod +x run_scenicplus_pycistarget.sh
 sh run_scenicplus_pycistarget_snakemake_prep.sh
 ```
+
+## Initialize snakemake directory
+```bash
+
+# Create script to initialize
+cat << EOF > initialize_snakemake.sh
+#!/bin/bash
+
+ml singularity
+
+# Change to the directory where
+# the input files are located.
+cd /data/path/to/project/scenic/;
+
+function scenicplus() { singularity exec -c -B $PWD,$PWD/tmp:/tmp scenicplus_v0.1.0.sif /usr/local/bin/scenicplus "$@" ; }
+export -f scenicplus
+
+DIR="scplus_snakemake"
+
+mkdir $DIR
+cd $DIR
+mkdir tmp
+mkdir outs
+
+cd ..
+scenicplus init_snakemake --out_dir $PWD/$DIR
+EOF
+
+# run as part of an interactive job, needs less than 1G ram and 1 thread
+chmod +x initialize_snakemake.sh
+sh initialize_snakemake.sh
+```
+

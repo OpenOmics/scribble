@@ -49,3 +49,8 @@ SINGULARITY_CACHEDIR=$PWD/.${USER} singularity pull -F docker://skchronicles/sce
 7. Initialize the snakemake directory. See submission_scripts.md for example run command.  
 8. Update config.yaml file and replace version in initialized directory in Snakemake/config subfolder. See config_notes.md for details on options.
 9. Run snakemake. See submission_scripts.md for example run command.
+10. To do downstream steps, follow website examples in an interactive session with the singularity object activated.
+```bash
+module load singularity
+singularity exec -c -B $PWD scenicplus_v0.1.0.sif /bin/bash
+```

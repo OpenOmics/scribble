@@ -149,9 +149,6 @@ module load singularity;
 # directory as the script.
 cd /data/path/to/project/scenic/;
 
-# make sure this matches hardcorded directory name in pycistarget_snakemake_prep.py
-mkdir bedfiles
-
 echo "Starting to run scenicplus script"
 singularity exec -c -B $PWD,${tmp}:/tmp scenicplus_v0.1.0.sif /bin/bash -c "cd $PWD; python $PWD/pycistarget_snakemake_prep.py"
 echo "Exit-code of scenicplus: $?"

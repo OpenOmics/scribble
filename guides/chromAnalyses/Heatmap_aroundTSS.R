@@ -32,8 +32,8 @@ end(bed_starts) <- start(bed_starts)
 
 mats <- vector(mode="list",length=length(bws)) 
 
-for (i in 1:length(bws3)) {
-  signal <- import(bws3[i])
+for (i in 1:length(bws)) {
+  signal <- import(bws[i])
 
   mats[[i]] <- normalizeToMatrix(signal, bed_starts,
           extend=c(10000, 10000), w=250,

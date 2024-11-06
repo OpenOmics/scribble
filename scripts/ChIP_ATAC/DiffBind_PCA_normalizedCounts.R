@@ -6,7 +6,7 @@
 # Research Technologies Branch/DIR/NIAID
 #
 # Created: December 7, 2022
-# Updated: February 27, 2024
+# Updated: November 6, 2024
 # 
 ####################
 #
@@ -15,10 +15,14 @@
 # 
 # For use on biowulf:
 #    sinteractive --mem=50G --gres=lscratch:200 --cpus-per-task=4
+#    These are estimates and do not work for all projects. If you have errors, the most common issues beyond not setting up
+#       the singularity correctly tend to involve not giving it enough memory.
 # 
 #  This is to load DiffBind v2. Make sure you list all directories you will need access to directly after the -B flag.
 #    module load singularity.
-#    singularity exec -B /data/NHLBI_IDSS,/data/OpenOmics,$PWD /data/OpenOmics/SIFs/cfchip_toolkit_v0.4.0.sif /bin/bash
+#    singularity exec -B /data/NHLBI_IDSS,/data/OpenOmics,$PWD /data/OpenOmics/SIFs/cfchip_toolkit_v0.5.0.sif /bin/bash
+#  
+#  To use this function, open R within the singularity, source this script, and run one of the two functions within.
 #
 # Functions:
 #    PCApeaks(csvfile, outroot)
@@ -34,7 +38,21 @@
 #    outroot: a string to add to the start of all output file names
 #    counts:  whether or not to make files of TMM- and RPKM-normalized
 #             data for all consensus peaks across all samples
+# 
+####################
+# Want to plot the PCA data? Here's an example using ggplot.
+# 
+# library(ggplot2)
+# plotData <- read.delim("S16S3_vs_Swk26_PCA_peaks_only.txt")
 #
+# c1p <- as.numeric(gsub("PC1 %: ","",rownames(plotData)[nrow(plotData)-2]))
+# c2p <- as.numeric(gsub("PC2 %: ","",rownames(plotData)[nrow(plotData)-1]))
+#
+# plotData <- plotData[grep("%",rownames(plotData),invert=T),]
+#
+# p <- ggplot(data=plotData,aes(x=PC1,y=PC2))
+# p + xlab(sprintf('PC1 [%2.0f%%]',c1p)) +
+#     ylab(sprintf('PC2 [%2.0f%%]',c2p))
 #
 ####################
 

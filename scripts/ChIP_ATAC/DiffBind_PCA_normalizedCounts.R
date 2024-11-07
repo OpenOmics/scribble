@@ -28,7 +28,7 @@
 #    PCApeaks(csvfile, outroot)
 #                To get PCA data using only peak positions
 #
-#    PCAcounts(csvfile, outroot, counts=TRUE)
+#    PCAcounts(csvfile, outroot, counts=TRUE, macsNarrow=FALSE)
 #                To get PCA on consensus peaks with TMM-normalized
 #                counts with ability to also save per sample
 #                TMM- and RPKM-normalized counts
@@ -38,6 +38,7 @@
 #    outroot: a string to add to the start of all output file names
 #    counts:  whether or not to make files of TMM- and RPKM-normalized
 #             data for all consensus peaks across all samples
+#    macsNarrow: if the peak caller used was macsNarrow, set this variable to TRUE
 # 
 ####################
 # Want to plot the PCA data? Here's an example using ggplot.
@@ -51,7 +52,8 @@
 # plotData <- plotData[grep("%",rownames(plotData),invert=T),]
 #
 # p <- ggplot(data=plotData,aes(x=PC1,y=PC2))
-# p + xlab(sprintf('PC1 [%2.0f%%]',c1p)) +
+# p + geom_point() +
+#     xlab(sprintf('PC1 [%2.0f%%]',c1p)) +
 #     ylab(sprintf('PC2 [%2.0f%%]',c2p))
 #
 ####################
@@ -150,9 +152,10 @@ PCApeaks <- function(csvfile, outroot) {
   PCAbasic(pv,outfile)
 }
 
-PCAcounts <- function(csvfile, outroot, counts=TRUE) {
+PCAcounts <- function(csvfile, outroot, counts=TRUE, macsNarrow=FALSE) {
   samples <- dba(sampleSheet=csvfile)
-  if ( grepl("narrow",samples$samples$Peaks[1]) ) {
+#  if ( grepl("narrow",samples$samples$Peaks[1]) ) {
+  if (macsNarrow == TRUE) {
     DBdataCounts <- dba.count(samples, summits=250)
   } else {
     DBdataCounts <- dba.count(samples)

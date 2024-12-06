@@ -1,0 +1,19 @@
+Purpose: To make symlinks to make .R1.fastq.gz from _R1_001.fastq.gz
+
+
+
+RE="(.*)_R(.+)_001.fastq.gz"
+
+for file in `ls */*fastq.gz`;
+do
+
+    if [[ $file =~ $RE ]]; then
+       sampleID=${BASH_REMATCH[1]}
+       readID=${BASH_REMATCH[2]}
+    fi
+
+    outname=$sampleID.R$readID.fastq.gz
+
+    ln -s "$file" "$outname"
+
+done

@@ -21,6 +21,7 @@ cat << EOF > run_scenicplus_models.sh
 #SBATCH --time=5-00:00:00
 #SBATCH --mem=300G
 #SBATCH --cpus-per-task=10
+#SBATCH --exclusive
 
 set -e
 module load singularity;
@@ -33,14 +34,14 @@ module load singularity;
 cd /data/path/to/project/scenic/;
 
 echo "Starting to run scenicplus script"
-# Please do not increase the number of
+# Please do NOT increase the number of
 # CPUs in the pycistopic_model.py 
 # script to more than 8. Increasing the 
 # number of CPUs will cause ray workers 
 # to unexpectedly error out. There is 
 # an unresolved bug in ray that causes
 # this issue. 
-singularity exec -c -B $PWD,${tmp}:/tmp scenicplus_v0.1.0.sif /bin/bash -c "cd $PWD; python $PWD/pycistopic_model.py"
+singularity exec -c -B $PWD,${tmp}:/tmp scenicplus_v0.1.0.sif /bin/bash -c "export RAY_num_server_call_thread=2; cd $PWD; python $PWD/pycistopic_model.py"
 echo "Exit-code of scenicplus: $?"
 EOF
 

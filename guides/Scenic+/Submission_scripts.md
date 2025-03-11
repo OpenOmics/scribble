@@ -21,7 +21,6 @@ cat << EOF > run_scenicplus_models.sh
 #SBATCH --time=5-00:00:00
 #SBATCH --mem=300G
 #SBATCH --cpus-per-task=10
-#SBATCH --exclusive
 
 set -e
 module load singularity;

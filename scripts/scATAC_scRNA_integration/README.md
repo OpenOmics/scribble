@@ -15,6 +15,12 @@ For running rliger on Biowulf as of 8/8/24:
 This module is a singularity object with the most up to date versions of all required and suggested packages on the rliger cran website. 
 It can be used interactively or in batch scripts, but cannot be used with Rstudio.
 
+UPDATE 3/18/25: Module is being removed from Biowulf, but Skyler set it up for us to use through OpenOmics.
+
+To use just:
+`export PATH="/data/OpenOmics/prod/rliger/2.0.1/bin:${PATH}"`
+
+
 It has two run functions:  
 `rliger-R` for running interactive commandline R  
 `rliger-Rscript` for running R jobs in batch scripts  

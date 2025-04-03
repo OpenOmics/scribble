@@ -13,7 +13,8 @@ For running rliger on Biowulf as of 8/8/24:
 `module load rliger`
 
 This module is a singularity object with the most up to date versions of all required and suggested packages on the rliger cran website. 
-It can be used interactively or in batch scripts, but cannot be used with Rstudio.
+It can be used interactively or in batch scripts, but cannot be used with Rstudio. It will make printed figures, but nothing using X11 popups.
+Also, included are seurat v4, ggplot, and patchwork for basic Rmd plot visualizations.
 
 UPDATE 3/18/25: Module is being removed from Biowulf, but Skyler set it up for us to use through OpenOmics.
 

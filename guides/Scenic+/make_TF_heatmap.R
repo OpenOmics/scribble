@@ -1,4 +1,6 @@
 # This is example code to grab the necessary files from the scenic plus outputs and create the TF heatmap shown in their papers/reports using R.
+# Requires make_TF_heatmap.py to be run first
+# Not all file locations are accurate
 
 library(ggplot2)
 

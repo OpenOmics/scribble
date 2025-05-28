@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Script to pair FASTQ files and validate R1/R2 matches
-# Usage: ./pair_fastq.sh file1_R1.fastq file1_R2.fastq file2_R1.fastq.gz file2_R2.fastq.gz ...
+# Usage: ./<SCRIPT>.sh file1_R1.fastq file1_R2.fastq file2_R1.fastq.gz file2_R2.fastq.gz ...
 
 set -euo pipefail
+shopt -s extglob
 
 function err() { cat <<< "$@" 1>&2; }
 function fatal() { cat <<< "$@" 1>&2; exit 1; }
@@ -60,30 +61,22 @@ function main() {
         # Try different common R1/R2 naming patterns
         sample_name=""
         read_type=""
-        
-        if [[ "$basename" =~ ^(.+)_R1\.(fastq|fq)(\.gz)?$ ]]; then
-            sample_name="${BASH_REMATCH[1]}"
-            read_type="R1"
-        elif [[ "$basename" =~ ^(.+)_R2\.(fastq|fq)(\.gz)?$ ]]; then
-            sample_name="${BASH_REMATCH[1]}"
-            read_type="R2"
-        elif [[ "$basename" =~ ^(.+)\.R1\.(fastq|fq)(\.gz)?$ ]]; then
-            sample_name="${BASH_REMATCH[1]}"
-            read_type="R1"
-        elif [[ "$basename" =~ ^(.+)\.R2\.(fastq|fq)(\.gz)?$ ]]; then
-            sample_name="${BASH_REMATCH[1]}"
-            read_type="R2"
-        elif [[ "$basename" =~ ^(.+)_1\.(fastq|fq)(\.gz)?$ ]]; then
-            sample_name="${BASH_REMATCH[1]}"
-            read_type="R1"
-        elif [[ "$basename" =~ ^(.+)_2\.(fastq|fq)(\.gz)?$ ]]; then
-            sample_name="${BASH_REMATCH[1]}"
-            read_type="R2"
-        else
+        read_regex="(.+)[_\.]R(1|2)[_\.].+\.fastq\.?(gz)?"
+
+        [[ $basename =~ $read_regex ]]
+        sample_name="${BASH_REMATCH[1]}"
+        rtype="${BASH_REMATCH[2]}"
+        read_type="R${rtype}"
+        gz="${BASH_REMATCH[3]}"
+        echo $read_type
+        echo $gz
+        echo $sample_name
+
+        if [[ $read_type =~ "R[1-2]" ]]; then
             echo "Error: Cannot determine R1/R2 from filename '$basename'"
-            echo "Expected patterns: *_R1.fastq[.gz], *_R2.fastq[.gz], *.R1.fastq[.gz], *.R2.fastq[.gz], *_1.fastq[.gz], *_2.fastq[.gz]"
+            echo "Expected patterns: *_R1_*.fastq[.gz], *_R1_*.fastq[.gz], *.R1.fastq[.gz], *.R2.fastq[.gz], *_1.fastq[.gz], *_2.fastq[.gz]"
             exit 1
-        fi
+        fi 
         
         echo "  Found: $sample_name -> $read_type ($file)"
         
@@ -162,8 +155,42 @@ function main() {
         exit 1
     fi
 
+    common_parent_dir=$(./common_parent.sh "$@")
+    if [[ $common_parent_dir == "/" ]]; then
+        echo "Common parent path between files too short! Please relocate files to same directory!"
+    fi
 
-    # do swarming
+    # swarm setup
+    swarm_file="centrifudge.swarm"
+    [ -f $swarm_file ] && rm $swarm_file
+
+    swarm_head="#SWARM -t 12 -g 16 --time 4:00:00 --partition norm"
+    echo $swarm_head >> $swarm_file
+
+    swarm_head="#SWARM --sbatch '--mail-type=FAIL --chdir=$PWD'"
+    echo $swarm_head >> $swarm_file
+
+    swarm_head="#SWARM --logdir $PWD/swarm_logs"
+    echo $swarm_head >> $swarm_file
+
+    swarm_head="#SWARM --module singularity"
+    echo $swarm_head >> $swarm_file
+
+    index_path="/data/OpenOmics/references/centrifuger/refseq_custom"
+    img="/data/OpenOmics/SIFs/centrifudger_sylph_0.0.4.sif"
+    binds="$common_parent_dir:$common_parent_dir,$PWD:/work2,/data/OpenOmics/references/centrifuger/refseq_custom:/data/OpenOmics/references/centrifuger/refseq_custom"
+
+    for sample in "${!all_samples[@]}"; do
+        # echo $sample
+        this_r1="${r1_files[$sample]}"
+        this_r2="${r1_files[$sample]}"
+        singularity_base="singularity run -c --cwd /work2 -B $binds $img "
+        singularity_cmd="centrifuger -t 10 -1 $this_r1 -2 $this_r2 -x /data/OpenOmics/references/centrifuger/refseq_custom/refseq_abv > ${sample}_classification.tsv; "
+        singularity_cmd+="centrifuger-quant -x /data/OpenOmics/references/centrifuger/refseq_custom/refseq_abv -c ${sample}_classification.tsv > ${sample}_centrifudge_report.tsv; "
+        singularity_cmd+="centrifuger-quant -x /data/OpenOmics/references/centrifuger/refseq_custom/refseq_abv --output-format 1 -c ${sample}_classification.tsv > ${sample}_metaphlan_report.tsv"
+        singularity_full="$singularity_base \"$singularity_cmd\""
+        echo $singularity_full >> $swarm_file
+    done
 }
 
 main "$@"

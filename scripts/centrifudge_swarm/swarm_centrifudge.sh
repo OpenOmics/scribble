@@ -24,10 +24,6 @@ function require(){
   done
 }
 
-function process_files() {
-
-}
-
 function main() {
     # Check if any arguments provided
     if [ $# -eq 0 ]; then

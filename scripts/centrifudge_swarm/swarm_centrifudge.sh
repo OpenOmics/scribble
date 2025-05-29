@@ -159,12 +159,13 @@ function main() {
     if [[ $common_parent_dir == "/" ]]; then
         echo "Common parent path between files too short! Please relocate files to same directory!"
     fi
+    common_parent_dir=${common_parent_dir/\/vf\/users/\/data}
 
     # swarm setup
     swarm_file="centrifudge.swarm"
     [ -f $swarm_file ] && rm $swarm_file
 
-    swarm_head="#SWARM -t 12 -g 16 --time 4:00:00 --partition norm"
+    swarm_head="#SWARM -t 12 -g 64 --time 4:00:00 --partition norm"
     echo $swarm_head >> $swarm_file
 
     swarm_head="#SWARM --sbatch '--mail-type=FAIL --chdir=$PWD'"
@@ -188,7 +189,7 @@ function main() {
         singularity_cmd="centrifuger -t 10 -1 $this_r1 -2 $this_r2 -x /data/OpenOmics/references/centrifuger/refseq_custom/refseq_abv > ${sample}_classification.tsv; "
         singularity_cmd+="centrifuger-quant -x /data/OpenOmics/references/centrifuger/refseq_custom/refseq_abv -c ${sample}_classification.tsv > ${sample}_centrifudge_report.tsv; "
         singularity_cmd+="centrifuger-quant -x /data/OpenOmics/references/centrifuger/refseq_custom/refseq_abv --output-format 1 -c ${sample}_classification.tsv > ${sample}_metaphlan_report.tsv"
-        singularity_full="$singularity_base \"$singularity_cmd\""
+        singularity_full="$singularity_base bash -ce \"$singularity_cmd\""
         echo $singularity_full >> $swarm_file
     done
 }

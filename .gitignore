@@ -224,3 +224,4 @@ tmp*/
 # Temp files
 *.html
 **/*.html
+swarm_logs

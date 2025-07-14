@@ -149,12 +149,27 @@ reductions <- names(seurat_obj@reductions)
 if (length(reductions) > 0) {
   for (reduction in reductions) {
     red_obj <- seurat_obj@reductions[[reduction]]
-    cat(sprintf("• %s: %d dimensions\n", reduction, ncol(red_obj@cell.embeddings)))
+    
+    # Get the assay used for this reduction
+    assay_used <- tryCatch({
+      # Try to get assay from the reduction object
+      if (!is.null(red_obj@assay.used) && red_obj@assay.used != "") {
+        red_obj@assay.used
+      } else {
+        "Not specified"
+      }
+    }, error = function(e) {
+      "Not specified"
+    })
+    
+    cat(sprintf("• %s: %d dimensions (assay: %s)\n", 
+                reduction, 
+                ncol(red_obj@cell.embeddings),
+                assay_used))
   }
 } else {
   cat("No dimensionality reductions found.\n")
 }
-cat("\n")
 
 # Metadata columns
 cat("METADATA COLUMNS\n")
@@ -195,6 +210,7 @@ if ("seurat_clusters" %in% colnames(metadata)) {
   }
   cat("\n")
 }
+cat("\n")
 
 # Active identity
 cat("ACTIVE IDENTITY\n")

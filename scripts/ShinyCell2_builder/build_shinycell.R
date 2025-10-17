@@ -10,22 +10,6 @@ fatal <- function(...) {
   quit(status = 1)
 }
 
-# get and check libraries
-required_packages <- c("Seurat", "optparse", "remotes")
-required_gh_packages <- c(ShinyCell2 = "OpenOmics/ShinyCell2")
-
-for (pkg in required_packages) {
-  if (!require(pkg, character.only = TRUE)) {
-    install.packages(pkg)
-  }
-}
-
-for (pkg in names(required_gh_packages)) {
-  if (!require(pkg, character.only = TRUE)) {
-    remotes::install_github(required_gh_packages[[pkg]])
-  }
-}
-
 # Load libraries
 suppressPackageStartupMessages(library(ShinyCell2, quietly = TRUE))
 suppressPackageStartupMessages(library(Seurat, quietly = TRUE))

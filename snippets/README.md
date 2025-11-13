@@ -229,4 +229,39 @@ for (i in 1:length(sgcList)) {
 alias orderuniq='awk '\''!x[$1]++'\'''
 ```
 
+### Get more information about a user
+
+*What?* This funtion can be added to your `~/.bashrc` file to get more information about a user. This is useful for getting the full name that is associated with a user.  
+*Why?* This mimics the unix `finger` command which may not be install on all systems. It is missing on many HPC systems using Rocky linux; however, this function can be used to get similar information as the original command.  
+
+#### **Usage**: `finger $USER`
+
+```bash
+function finger(){
+  # Gets the full name of the user given
+  # there unix user name. finger command
+  # is not available on this system. This
+  # provides similar functionality.
+  # @INPUT  $1: Unix username
+  # @RETURN User information and exit code
+  local u=""  # name associated with user
+  local d=""  # user home directory
+  local s=""  # user login shell
+  u=$(getent passwd "${1:-}" | cut -d ':' -f5)
+  d=$(getent passwd "${1:-}" | cut -d ':' -f6)
+  s=$(getent passwd "${1:-}" | cut -d ':' -f7)
+  if [ -z "$u" ]; then
+    # No name associated with user
+    echo "finger: ${1}: no such user" 1>&2;
+    return 1
+  else
+    echo -e "Login: ${1}\tName: ${u}"
+    echo -e "Directory: ${d}\tShell: ${s}"
+    return 0
+  fi
+}
+
+export -f finger
+```
+
 

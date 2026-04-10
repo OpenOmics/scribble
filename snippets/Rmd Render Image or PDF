@@ -1,0 +1,59 @@
+## This is a function to embed images or PDFs in an R markdown document.
+
+## Either file type is converted to URI and cat-ed as HTML.
+
+## PDFs are rendered inside a scollable div.
+
+## ** Must use chunk option "results='asis'" in the code chunk calling this function. **
+
+render_img <- function(file_path, width = "95%", height = "auto") {
+  # --- 1. Check if the file exists ---
+  if (!file.exists(file_path)) {
+    cat("Image not found. Please re-run the analysis chunk to generate it.")
+    return()
+  }
+
+  # --- 2. Encode the file as a data URI ---
+  # knitr::image_uri is smart enough to handle both PDFs and PNGs
+  uri <- knitr::image_uri(file_path)
+
+  # --- 3. Determine the file type to generate the correct HTML tag ---
+  file_ext <- tolower(tools::file_ext(file_path))
+
+  # --- 4. Generate and print the appropriate HTML tag ---
+  if (file_ext == "pdf") {
+    # Use the <embed> tag for PDFs to get the browser's PDF viewer
+    # A fixed height is usually required for <embed> to work well.
+    if (height == "auto") height <- "500px" # Provide a default height for PDFs
+    
+    cat(paste0(
+      '<embed src="', uri, '" type="application/pdf" width="', width, '" height="', height, '" />'
+    ))
+  } else {
+    # Use the <img> tag for standard images (PNG, JPG, etc.)
+    # Using 'style' is more flexible for images, especially with max-width.
+    cat(paste0(
+      '<img src="', uri, '" style="width:', width, '; height:', height, '; max-width:95%;" />'
+    ))
+  }
+}
+
+
+### Example Usage:
+
+plot1 <- ... (plotting code)
+
+plot1_file <- "/path/to/image"
+ggsave(plot1_file, plot=plot1, ...)
+
+pdf_file="multi_page.pdf"
+pdf(file=pdf_file, ...)
+plot1
+plot2
+plot3
+dev.off()
+
+render_img(plot1_file, width="85%")
+render_img(pdf_file, width="100%", height="400px")
+
+

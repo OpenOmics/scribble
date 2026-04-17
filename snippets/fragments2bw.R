@@ -15,5 +15,5 @@ covDat <- coverage(fragDat)
 rtracklayer::export(covDat, outFile)
 
 # Want to extract for a single annotation?
-# Step 1: Grab barcodes of the cells from the Seurat object
+# Step 1: Grab barcodes of the cells from the Seurat/Signac object
 # Step 2: Filter inFrag to only include rows containing the barcodes of interest (Column 4 is barcode ID)

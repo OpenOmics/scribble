@@ -1,0 +1,23 @@
+From: Larissa Diaz
+
+plot_df <- targeted_de %>%
+    mutate(Gene = fct_reorder(Gene, avg_log2FC))
+
+  p_targeted <- ggplot(plot_df, aes(x = Gene, y = avg_log2FC, fill = Enriched_In)) +
+    geom_col(color = "black", size = 0.2) +
+    coord_flip() +
+    facet_grid(Cell_Category ~ ., scales = "free_y", space = "free_y") +
+    theme_bw() +
+    theme(
+      strip.text.y = element_text(angle = 0, face = "bold", size = 9),
+      axis.text.y = element_text(face = "bold.italic", size = 8),
+      legend.position = "bottom",
+      plot.title = element_text(face = "bold", size = 12)
+    ) +
+    scale_fill_manual(values = setNames(c("firebrick", "dodgerblue"), c(ident1, ident2))) +
+    labs(
+      title = paste0("Targeted Lung Markers: ", ident1, " vs ", ident2),
+      x = "Marker Gene",
+      y = "Log2 Fold Change",
+      fill = "Enriched In:"
+    )

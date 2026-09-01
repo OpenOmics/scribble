@@ -16,9 +16,45 @@ use clap::Parser;
 use futures_util::StreamExt;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use serde::Deserialize;
+use std::future::Future;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
+
+/// Delay (in seconds) to wait *before* each attempt.
+/// Attempt 1: no wait. Attempt 2: 1s. Attempt 3: 5s.
+const RETRY_DELAYS_SECS: &[u64] = &[0, 1, 5];
+
+/// Retry a fallible async operation up to `RETRY_DELAYS_SECS.len()` times.
+/// `label` is used for logging context on failed attempts.
+async fn with_retries<T, E, F, Fut>(label: &str, mut op: F) -> Result<T, E>
+where
+    F: FnMut() -> Fut,
+    Fut: Future<Output = Result<T, E>>,
+    E: std::fmt::Display,
+{
+    let mut last_err: Option<E> = None;
+    for (attempt, delay) in RETRY_DELAYS_SECS.iter().enumerate() {
+        if *delay > 0 {
+            tokio::time::sleep(Duration::from_secs(*delay)).await;
+        }
+        match op().await {
+            Ok(v) => return Ok(v),
+            Err(e) => {
+                eprintln!(
+                    "  [retry] {} — attempt {}/{} failed: {}",
+                    label,
+                    attempt + 1,
+                    RETRY_DELAYS_SECS.len(),
+                    e
+                );
+                last_err = Some(e);
+            }
+        }
+    }
+    Err(last_err.expect("loop always populates last_err on failure"))
+}
 
 #[derive(Parser, Debug)]
 #[command(author, version, about = "Download all files from a Zenodo record")]
@@ -82,25 +118,28 @@ async fn fetch_record(
     };
     let url = format!("{}/api/records/{}", base, record_id);
 
-    let mut req = client.get(&url);
-    if let Some(t) = token {
-        req = req.bearer_auth(t);
-    }
+    with_retries(&format!("fetch metadata for {}", record_id), || async {
+        let mut req = client.get(&url);
+        if let Some(t) = token {
+            req = req.bearer_auth(t);
+        }
 
-    let resp = req.send().await.context("failed to reach Zenodo API")?;
-    let status = resp.status();
-    if !status.is_success() {
-        let body = resp.text().await.unwrap_or_default();
-        return Err(anyhow!(
-            "Zenodo API returned {} for record {}: {}",
-            status,
-            record_id,
-            body
-        ));
-    }
+        let resp = req.send().await.context("failed to reach Zenodo API")?;
+        let status = resp.status();
+        if !status.is_success() {
+            let body = resp.text().await.unwrap_or_default();
+            return Err(anyhow!(
+                "Zenodo API returned {} for record {}: {}",
+                status,
+                record_id,
+                body
+            ));
+        }
 
-    let record: ZenodoRecord = resp.json().await.context("failed to parse record JSON")?;
-    Ok(record)
+        let record: ZenodoRecord = resp.json().await.context("failed to parse record JSON")?;
+        Ok(record)
+    })
+    .await
 }
 
 /// Verify a file on disk against a Zenodo checksum string like "md5:abcd..."
@@ -170,18 +209,7 @@ async fn download_file(
         }
     }
 
-    let mut req = client.get(&file.links.self_link);
-    if let Some(t) = &token {
-        req = req.bearer_auth(t);
-    }
-
-    let resp = req.send().await.with_context(|| format!("request failed for {}", file.key))?;
-    if !resp.status().is_success() {
-        return Err(anyhow!("download of {} failed: HTTP {}", file.key, resp.status()));
-    }
-
-    let total = resp.content_length().unwrap_or(file.size);
-    let pb = multi.add(ProgressBar::new(total));
+    let pb = multi.add(ProgressBar::new(file.size));
     pb.set_style(
         ProgressStyle::with_template(
             "{msg:<40} [{bar:30.cyan/blue}] {bytes}/{total_bytes} ({bytes_per_sec}, {eta})",
@@ -191,17 +219,47 @@ async fn download_file(
     );
     pb.set_message(file.key.clone());
 
-    let mut out = File::create(&out_path)
-        .await
-        .with_context(|| format!("cannot create {}", out_path.display()))?;
-    let mut stream = resp.bytes_stream();
+    // Retry the whole request+stream as a unit. On mid-stream failure we
+    // truncate and start over rather than trying to resume with Range.
+    let download_result = with_retries(&format!("download {}", file.key), || async {
+        let mut req = client.get(&file.links.self_link);
+        if let Some(t) = &token {
+            req = req.bearer_auth(t);
+        }
 
-    while let Some(chunk) = stream.next().await {
-        let chunk = chunk.context("stream error")?;
-        out.write_all(&chunk).await?;
-        pb.inc(chunk.len() as u64);
+        let resp = req
+            .send()
+            .await
+            .with_context(|| format!("request failed for {}", file.key))?;
+        if !resp.status().is_success() {
+            return Err(anyhow!(
+                "download of {} failed: HTTP {}",
+                file.key,
+                resp.status()
+            ));
+        }
+
+        // Reset progress + output file for this attempt
+        pb.set_position(0);
+        let mut out = File::create(&out_path)
+            .await
+            .with_context(|| format!("cannot create {}", out_path.display()))?;
+        let mut stream = resp.bytes_stream();
+
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.context("stream error")?;
+            out.write_all(&chunk).await?;
+            pb.inc(chunk.len() as u64);
+        }
+        out.flush().await?;
+        Ok(())
+    })
+    .await;
+
+    if let Err(e) = download_result {
+        pb.finish_with_message(format!("✗ {} (failed)", file.key));
+        return Err(e);
     }
-    out.flush().await?;
 
     // Verify checksum after download
     match verify_checksum(&out_path, &file.checksum).await {

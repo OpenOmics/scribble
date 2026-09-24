@@ -184,7 +184,7 @@ function main() {
     for sample in "${!all_samples[@]}"; do
         # echo $sample
         this_r1="${r1_files[$sample]}"
-        this_r2="${r1_files[$sample]}"
+        this_r2="${r2_files[$sample]}"
         singularity_base="singularity run -c --cwd /work2 -B $binds $img "
         singularity_cmd="centrifuger -t 10 -1 $this_r1 -2 $this_r2 -x /data/OpenOmics/references/centrifuger/refseq_custom/refseq_abv > ${sample}_classification.tsv; "
         singularity_cmd+="centrifuger-quant -x /data/OpenOmics/references/centrifuger/refseq_custom/refseq_abv -c ${sample}_classification.tsv > ${sample}_centrifudge_report.tsv; "
